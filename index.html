@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Working prototype of Verisavo Market Simulation: frame a decision, adjust assumptions, run thousands of scenarios, close an Intelligence Gap and record the decision.">
+<title>Verisavo Market Simulation</title>
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: indigo product bar, step tabs, work area + "how this step works" rail */
+:root{
+  --bg:#F6F8FC; --surface:#FFFFFF; --surface-2:#EEF2F9; --ink:#1F273F; --muted:#4A5675; --line:#DCE3EF; --line-2:#C3CEE0;
+  --brand:#1F273F; --brand-ink:#FFFFFF; --brand-muted:#CCDDF1;
+  --accent:#4362B2; --band:#CCDDF1; --band-strong:#3A5292; --band-soft:#E3EBF8;
+  --warn-bg:#FBF1DE; --warn-ink:#7A4B0B; --warn-line:#E9C987;
+  --good:#2F6B4F;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111726; --surface:#192134; --surface-2:#202A41; --ink:#E3EBF8; --muted:#A3B0C8; --line:#2B3651; --line-2:#3A4766;
+  --brand:#0C1120; --brand-ink:#FFFFFF; --brand-muted:#A8C6E8;
+  --accent:#80AADC; --band:#2E3D63; --band-strong:#80AADC; --band-soft:#22304F;
+  --warn-bg:#3A2E14; --warn-ink:#F0D9A8; --warn-line:#6B5222; --good:#7FC4A0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111726; --surface:#192134; --surface-2:#202A41; --ink:#E3EBF8; --muted:#A3B0C8; --line:#2B3651; --line-2:#3A4766;
+  --brand:#0C1120; --brand-ink:#FFFFFF; --brand-muted:#A8C6E8;
+  --accent:#80AADC; --band:#2E3D63; --band-strong:#80AADC; --band-soft:#22304F;
+  --warn-bg:#3A2E14; --warn-ink:#F0D9A8; --warn-line:#6B5222; --good:#7FC4A0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55}
+a{color:var(--accent)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{text-wrap:balance;margin:0}
+
+.topbar{background:var(--brand);color:var(--brand-ink)}
+.wrap{max-width:1260px;margin:0 auto;padding-inline:20px}
+.topbar .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-block:14px}
+.brandname{font-weight:600;font-size:19px;letter-spacing:-.01em}
+.brandname span{font-weight:400;color:var(--brand-muted);margin-left:10px;font-size:15px}
+.proto{font-family:var(--mono);font-size:12px;color:var(--brand-muted)}
+
+.head{padding-block:24px 0}
+.head h1{font-size:clamp(22px,3vw,28px);font-weight:600;letter-spacing:-.01em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--band-soft);color:var(--ink)}
+.ground{font-weight:600;border:1px solid}
+.g-exploratory{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.g-partial{background:var(--surface);color:var(--ink);border-color:var(--accent)}
+.g-grounded{background:var(--band-strong);color:var(--surface);border-color:var(--band-strong)}
+
+.stepsbox{overflow-x:auto;margin-top:18px;border-bottom:1px solid var(--line)}
+.steps{display:flex;gap:2px;min-width:max-content}
+.steps button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;min-height:46px;padding:0 14px;color:var(--muted);cursor:pointer;font-size:14px;white-space:nowrap}
+.steps button:hover{color:var(--ink)}
+.steps button[aria-current="step"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.steps .n{font-family:var(--mono);font-size:12px;color:var(--accent);margin-right:8px}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;padding-block:24px 64px;align-items:start}
+@media (max-width:960px){.layout{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px;min-width:0}
+.card h2{font-size:19px;font-weight:600}
+.card h3{font-size:15.5px;font-weight:600}
+.intro{max-width:68ch;margin:6px 0 0}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:flex;flex-direction:column;gap:16px}
+@media (max-width:960px){.rail{position:static}}
+.how{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:20px}
+.how h3{font-size:15px;font-weight:600;margin-top:6px}
+.how p{margin:8px 0 0;font-size:14px}
+.how ul{margin:8px 0 0;padding-left:18px;font-size:14px}
+.how li+li{margin-top:4px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);font-weight:600;cursor:pointer;font-size:14px}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn2{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-weight:500;cursor:pointer;font-size:14px}
+.btn2:hover{border-color:var(--ink)}
+.btn:disabled,.btn2:disabled{opacity:.5;cursor:not-allowed}
+.navrow{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+
+.field{width:100%;min-height:44px;border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;background:var(--surface);color:var(--ink)}
+textarea.field{resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:640px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+.fl label{display:block;margin-bottom:6px}
+
+.st{display:inline-flex;align-items:center;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;white-space:nowrap;border:1px solid}
+.st-Fact{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.st-Inference{background:var(--band);color:var(--ink);border-color:var(--band)}
+.st-Hypothesis{background:var(--surface);color:var(--accent);border-color:var(--accent)}
+.st-Assumption{background:var(--surface);color:var(--muted);border-style:dashed;border-color:var(--muted)}
+.st-Unknown{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.edited{font-size:12px;color:var(--accent);font-weight:500}
+
+.tblbox{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.unk td{background:var(--warn-bg)}
+.cov{height:6px;border-radius:3px;background:var(--band-soft);width:110px;position:relative;overflow:hidden;margin-top:8px}
+.cov i{position:absolute;inset:0 auto 0 0;background:var(--band-strong)}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .v{font-family:var(--mono);font-size:24px;font-weight:500}
+
+/* system map */
+.mapbox{overflow-x:auto}
+.map{min-width:760px;display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 34px minmax(0,1fr) 34px minmax(0,1fr) 34px minmax(0,1fr);grid-template-rows:auto 38px auto 38px auto}
+.node{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;min-height:78px;text-align:left;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:11px 12px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--ink)}
+.node:hover{border-color:var(--ink)}
+.node.out{background:var(--band-soft);border-color:var(--accent)}
+.node.lever{border-style:dashed}
+.node[aria-pressed="true"]{border:2px solid var(--ink);box-shadow:0 0 0 4px var(--band-soft)}
+.ar{display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.ar svg{display:block}
+
+/* assumptions */
+.drv{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr);gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
+.drv:last-child{border-bottom:0}
+@media (max-width:640px){.drv{grid-template-columns:minmax(0,1fr)}}
+.band{position:relative;height:24px;margin:4px 0 6px}
+.band .base{position:absolute;left:0;right:0;top:11px;height:2px;background:var(--band-soft)}
+.band .rng{position:absolute;top:6px;height:12px;border-radius:6px;background:var(--band)}
+.band .ev{position:absolute;top:3px;height:18px;border:1px dashed var(--accent);border-radius:9px}
+.band .mid{position:absolute;top:2px;width:2px;height:20px;background:var(--ink);margin-left:-1px}
+.sl{display:grid;grid-template-columns:44px minmax(0,1fr) 72px;gap:10px;align-items:center;font-size:13px}
+.sl input[type=range]{width:100%;accent-color:var(--accent);min-height:28px}
+.scen{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:500}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* range charts */
+.rr{display:grid;grid-template-columns:130px minmax(0,1fr) 128px;gap:14px;align-items:center;min-height:52px}
+@media (max-width:640px){.rr{grid-template-columns:minmax(0,1fr)}.rr .axisgap{display:none}}
+.plot{position:relative;height:40px}
+.plot .gl{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.plot .zero{position:absolute;top:0;bottom:0;border-left:1.5px dashed var(--muted)}
+.plot .o{position:absolute;top:12px;height:16px;border-radius:8px;background:var(--band)}
+.plot .i{position:absolute;top:12px;height:16px;border-radius:8px;background:var(--band-strong)}
+.plot .md{position:absolute;top:8px;height:24px;width:2px;margin-left:-1px;background:var(--surface);box-shadow:0 0 0 1px var(--band-strong)}
+.ticks{position:relative;height:18px;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:18px;font-size:12.5px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{display:inline-block;width:26px;height:10px;border-radius:5px}
+.verdict{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+.verdict .big{font-family:var(--mono);font-size:34px;font-weight:500;line-height:1}
+.meter{height:10px;border-radius:5px;background:var(--band);overflow:hidden;flex:1 1 200px;min-width:160px}
+.meter i{display:block;height:100%;background:var(--band-strong)}
+
+/* tornado */
+.tr{display:grid;grid-template-columns:210px minmax(0,1fr) 120px;gap:14px;align-items:center;min-height:58px}
+@media (max-width:640px){.tr{grid-template-columns:minmax(0,1fr)}}
+.tplot{position:relative;height:40px}
+.tplot .bar{position:absolute;top:10px;height:20px;border-radius:4px;background:var(--band)}
+.tplot .bar.flip{background:var(--band-strong)}
+.tplot .basel{position:absolute;top:2px;bottom:2px;border-left:2px solid var(--ink)}
+
+.banner{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;padding:13px 16px;border-radius:10px;border:1px solid}
+.banner.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-line)}
+.banner.info{background:var(--band-soft);color:var(--ink);border-color:var(--band)}
+
+.gap{border:1.5px solid var(--ink);border-radius:12px;padding:18px;background:var(--surface)}
+.gap.quiet{border:1px solid var(--line)}
+.pipe{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.pipe div{display:flex;gap:10px;align-items:center;font-size:13.5px}
+.dot{flex:none;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2)}
+.dot.done{background:var(--ink);border-color:var(--ink)}
+.dot.now{border:2px solid var(--ink);background:var(--band-soft)}
+@media (prefers-reduced-motion:no-preference){.dot.now{animation:pulse 1s ease-in-out infinite}}
+@keyframes pulse{50%{box-shadow:0 0 0 5px var(--band-soft)}}
+.kv{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.kv span:last-child{text-align:right}
+
+.mem{display:flex;flex-direction:column;gap:0}
+.mem div{padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.mem div:last-child{border-bottom:0}
+.mem time{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line-2);border-radius:10px;padding:14px;cursor:pointer}
+.opt:has(input:checked){border:2px solid var(--ink);background:var(--surface-2)}
+.check{display:flex;gap:10px;align-items:center;min-height:40px;font-size:14px}
+.check input,.opt input{width:18px;height:18px;accent-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:500;z-index:5;max-width:calc(100% - 32px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.explain{margin-top:12px;padding:14px 16px;border-radius:10px;background:var(--surface-2);font-size:14px}
+.explain p{margin:0}.explain p+p{margin-top:8px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brandname">Verisavo<span>Market Simulation</span></div>
+    <div class="proto">Working prototype · illustrative data · runs in your browser</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="head">
+    <h1 id="title">Raise 500ml price 10% or hold</h1>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div class="stepsbox"><nav class="steps" id="steps" aria-label="Simulation steps"></nav></div>
+  <div class="layout">
+    <main class="col" id="view"></main>
+    <aside class="rail" id="rail"></aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Evidence the platform starts from (illustrative) ---------- */
+var EVIDENCE = {
+  pt:{name:'Retailer pass-through', short:'Pass-through', unit:'%', lo:60, hi:100, min:0, max:100, step:5, state:'Unknown',
+      src:'No recent evidence for this channel', recency:'None',
+      desc:'Share of a list-price rise that dukas and kiosks pass on to the shelf price.',
+      how:'Sets how much of your list-price change reaches the shopper. Anything not passed on squeezes retailer margin.',
+      inv:{lo:55, hi:70, state:'Inference', src:'SavoScouts shelf-price observations, 2 rounds', method:'Shelf-price and stocking observations in sampled outlets, plus a short question on pricing practice', who:'SavoScouts via mobile app and WhatsApp'}},
+  el:{name:'Price elasticity vs competing brands', short:'Elasticity', unit:'', lo:-2.4, hi:-1.8, min:-3.5, max:0, step:0.1, state:'Inference',
+      src:'Your sales after the last 2 price moves', recency:'2025',
+      desc:'How volume responds when your shelf price moves relative to competing brands.',
+      how:'Multiplies the change in your shelf price relative to competitors to give the change in volume.',
+      inv:{lo:-2.2, hi:-1.95, state:'Inference', src:'Expanded analysis of company sales and a category panel', method:'Re-estimate using more price events and outlet-level sales', who:'Verisavo analysts'}},
+  cm:{name:'Competitor raises price too', short:'Competitor response', unit:'% chance', lo:20, hi:60, min:0, max:100, step:5, state:'Hypothesis',
+      src:'Behaviour seen in a neighbouring market', recency:'2024',
+      desc:'Chance that the main competitor raises its own price by about 10% within two months.',
+      how:'In each run, a competitor raise either happens or not with this probability. If it happens, your relative price falls by its raise.',
+      inv:{lo:45, hi:65, state:'Inference', src:'Distributor interviews and competitor shelf tracking', method:'Distributor conversations plus monthly competitor shelf-price tracking', who:'SavoScouts and Verisavo analysts'}},
+  sk:{name:'Stocking cut when margins are squeezed', short:'Stocking response', unit:'%', lo:0, hi:40, min:0, max:100, step:5, state:'Assumption',
+      src:'Team judgement', recency:'n/a',
+      desc:'How strongly outlets cut stock of your product when they absorb part of the increase themselves.',
+      how:'Reduces availability, and so volume, in proportion to the part of the increase retailers absorb.',
+      inv:{lo:10, hi:25, state:'Inference', src:'SavoScouts retailer questions on stocking decisions', method:'Short structured questions to outlet owners on how they respond to margin pressure', who:'SavoScouts via WhatsApp and voice'}},
+  ic:{name:'Input cost increase', short:'Input cost', unit:'%', lo:6, hi:8, min:0, max:20, step:0.5, state:'Fact',
+      src:'Supplier contracts', recency:'This quarter',
+      desc:'Increase in your unit cost this period.',
+      how:'Raises unit cost from 50% of today’s price. Applies to both options.',
+      inv:null}
+};
+var ORDER = ['pt','el','cm','sk','ic'];
+var COVER = {Fact:100, Inference:65, Hypothesis:35, Assumption:20, Unknown:0};
+var STEPS = ['Brief','Evidence','System map','Assumptions','Outcomes','Sensitivity and gaps','Decision'];
+var SCEN = {base:'Baseline', match:'Competitor raises', hold:'Competitor holds', cost:'Input costs rise further'};
+var N = 3000;
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+var S = {
+  step:0,
+  brief:{question:"If we raise our 500ml price by 10% in Nairobi's dukas and kiosks, what could happen to volume and profit over the next six months, compared with holding price?",
+         city:'Nairobi', channel:'Traditional trade (dukas, kiosks)', horizon:6, price:10},
+  drv:{}, scenario:'base', sel:'pt', gaps:{}, memory:[], decisions:[], explain:false
+};
+ORDER.forEach(function(k){var e=EVIDENCE[k]; S.drv[k]={lo:e.lo,hi:e.hi,state:e.state,src:e.src,recency:e.recency,edited:false};});
+logMem('Simulation created from the brief. Evidence assembled for 5 drivers.');
+
+/* ---------- Model ---------- */
+// Unit cost is 50% of today's price, so baseline gross margin is 50%.
+// Volume change v = elasticity x (change in your shelf price relative to competitor) - stocking loss
+// Gross profit change = (1+v) x new unit margin / old unit margin - 1
+var COST_SHARE = 0.5, COMP_RAISE = 0.10;
+function outcome(p, t, e, matched, k, c){
+  var rel = t*p - (matched ? t*COMP_RAISE : 0);
+  var v = e*rel - k*(1-t)*p*3;
+  var um0 = 1 - COST_SHARE;
+  var um = (1+p) - COST_SHARE*(1+c);
+  return {vol:v, profit:(1+v)*um/um0 - 1};
+}
+function effective(scen){
+  var d = clone(S.drv);
+  if(scen==='match'){d.cm.lo=100; d.cm.hi=100;}
+  if(scen==='hold'){d.cm.lo=0; d.cm.hi=0;}
+  if(scen==='cost'){d.ic.lo=10; d.ic.hi=12;}
+  return d;
+}
+function rng(seed){return function(){seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296;};}
+function u(r,a,b){return a+(b-a)*r();}
+function simulate(scen){
+  var d = effective(scen), r = rng(20261002), p = S.brief.price/100;
+  var A={vol:[],profit:[]}, B={vol:[],profit:[]}, draws=[], aheadA=0;
+  for(var i=0;i<N;i++){
+    var t=u(r,d.pt.lo,d.pt.hi)/100, e=u(r,d.el.lo,d.el.hi), q=u(r,d.cm.lo,d.cm.hi)/100,
+        m=r()<q, k=u(r,d.sk.lo,d.sk.hi)/100, c=u(r,d.ic.lo,d.ic.hi)/100;
+    var a=outcome(p,t,e,m,k,c), b=outcome(0,t,e,m,k,c);
+    A.vol.push(a.vol); A.profit.push(a.profit); B.vol.push(b.vol); B.profit.push(b.profit);
+    draws.push({t:t,e:e,m:m,k:k,c:c,a:a.profit});
+    if(a.profit>b.profit) aheadA++;
+  }
+  return {A:{vol:stats(A.vol),profit:stats(A.profit)}, B:{vol:stats(B.vol),profit:stats(B.profit)}, pA:aheadA/N, draws:draws};
+}
+function stats(xs){var s=xs.slice().sort(function(a,b){return a-b;}); function q(f){return s[Math.min(s.length-1,Math.floor(f*(s.length-1)))];}
+  return {p5:q(.05),p25:q(.25),p50:q(.5),p75:q(.75),p95:q(.95)};}
+// Expected advantage of A over B in gross profit, at given driver values
+function advantage(vals){
+  var p=S.brief.price/100, q=vals.cm/100;
+  function f(m){return outcome(p,vals.pt/100,vals.el,m,vals.sk/100,vals.ic/100).profit - outcome(0,vals.pt/100,vals.el,m,vals.sk/100,vals.ic/100).profit;}
+  return q*f(true)+(1-q)*f(false);
+}
+function sensitivity(){
+  var d=S.drv, mid={};
+  ORDER.forEach(function(k){mid[k]=(d[k].lo+d[k].hi)/2;});
+  var base=advantage(mid);
+  var rows=ORDER.map(function(k){
+    var lo=clone(mid), hi=clone(mid); lo[k]=d[k].lo; hi[k]=d[k].hi;
+    var a=advantage(lo), b=advantage(hi);
+    var mn=Math.min(a,b), mx=Math.max(a,b);
+    return {k:k, lo:mn, hi:mx, width:mx-mn, flips: mn<0 && mx>0};
+  }).sort(function(x,y){return y.width-x.width;});
+  return {base:base, rows:rows};
+}
+function grounding(){
+  var rows=sensitivity().rows, top=rows.slice(0,2);
+  var s0=S.drv[top[0].k].state, s1=S.drv[top[1].k].state;
+  if(s0==='Unknown') return {cls:'g-exploratory', label:'Exploratory', why:'The driver with the most influence, '+EVIDENCE[top[0].k].name.toLowerCase()+', is Unknown.'};
+  var weakFlip=rows.filter(function(r){return r.flips && /Hypothesis|Assumption|Unknown/.test(S.drv[r.k].state);})[0];
+  if(weakFlip) return {cls:'g-partial', label:'Partially grounded', why:EVIDENCE[weakFlip.k].name+' could change the preferred option and rests on '+(S.drv[weakFlip.k].state==='Assumption'?'an Assumption':'a '+S.drv[weakFlip.k].state)+'.'};
+  if(/Hypothesis|Assumption|Unknown/.test(s0+s1)) return {cls:'g-partial', label:'Partially grounded', why:'At least one of the two most influential drivers rests on a Hypothesis or Assumption.'};
+  return {cls:'g-grounded', label:'Evidence-grounded', why:'The most influential drivers rest on Facts or Inferences.'};
+}
+
+/* ---------- Helpers ---------- */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function sgn(x,dp){dp=dp==null?0:dp; var v=(x*100).toFixed(dp); if(Number(v)===0) return '0%'; return (x>0?'+':'−')+Math.abs(Number(v)).toFixed(dp)+'%';}
+function pts(x,dp){dp=dp==null?1:dp; var v=(x*100).toFixed(dp); if(Number(v)===0) return '0'; return (x>0?'+':'−')+Math.abs(Number(v)).toFixed(dp);}
+function fv(k,v){var e=EVIDENCE[k]; if(k==='el') return (v<0?'−':'')+Math.abs(v).toFixed(1); return (Math.round(v*10)/10)+(e.unit==='%'||e.unit==='% chance'?'%':'');}
+function frange(k,d){d=d||S.drv[k]; return d.lo===d.hi? fv(k,d.lo) : fv(k,d.lo)+' to '+fv(k,d.hi);}
+function badge(st){return '<span class="st st-'+st+'">'+st+'</span>';}
+function now(){var d=new Date(); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}
+function logMem(text){S.memory.unshift({t:now(), text:text});}
+function niceTicks(mn,mx,count){
+  var span=mx-mn, step=Math.pow(10,Math.floor(Math.log10(span/count))), err=span/count/step;
+  if(err>=7.5) step*=10; else if(err>=3.5) step*=5; else if(err>=1.5) step*=2;
+  var a=Math.floor(mn/step)*step, b=Math.ceil(mx/step)*step, t=[];
+  for(var x=a;x<=b+step/2;x+=step) t.push(Math.round(x/step)*step);
+  return {lo:a,hi:b,ticks:t};
+}
+var toastTimer;
+function toast(msg){var el=document.getElementById('toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(function(){el.hidden=true;},2600);}
+
+/* ---------- Shell ---------- */
+function renderShell(){
+  var g=grounding(), b=S.brief;
+  document.getElementById('title').textContent = (b.price>0?'Raise '+b.price+'%':'Change price')+' or hold · '+b.city;
+  document.getElementById('chips').innerHTML =
+    '<span class="chip">'+esc(b.city)+'</span><span class="chip">'+esc(b.channel)+'</span><span class="chip">'+b.horizon+'-month horizon</span>'+
+    '<span class="chip ground '+g.cls+'" title="'+esc(g.why)+'">'+g.label+'</span>';
+  document.getElementById('steps').innerHTML = STEPS.map(function(s,i){
+    return '<button type="button" data-step="'+i+'"'+(i===S.step?' aria-current="step"':'')+'><span class="n">0'+(i+1)+'</span>'+s+'</button>';}).join('');
+}
+function navRow(backLabel, nextLabel){
+  return '<div class="navrow">'+(S.step>0?'<button class="btn2" data-step="'+(S.step-1)+'">'+backLabel+'</button>':'<span></span>')+
+    (nextLabel?'<button class="btn" data-step="'+(S.step+1)+'">'+nextLabel+'</button>':'')+'</div>';
+}
+
+/* ---------- Views ---------- */
+var VIEWS = [viewBrief, viewEvidence, viewMap, viewAssumptions, viewOutcomes, viewSensitivity, viewDecision];
+var HOW = [
+  ['What happens here','<p>You state the decision in plain language. The brief turns it into options, scope and the outcomes that matter.</p><p>Try it: change the percentage, city or horizon in your question and press <strong>Draft brief</strong>. The fields update and every later step recalculates.</p><p>In the full product the Intelligence Assistant drafts the brief. Here a simple parser reads the percentage, city, channel and months from your text.</p>'],
+  ['What happens here','<p>Before anything runs, the system shows how much is actually known about each driver, where it came from and how certain it is.</p><ul><li><strong>Fact</strong>: supported within a defined scope</li><li><strong>Inference</strong>: derived from evidence, not observed</li><li><strong>Hypothesis</strong>: proposed, needs testing</li><li><strong>Assumption</strong>: treated as true for now</li><li><strong>Unknown</strong>: evidence cannot answer yet</li></ul><p>A thin area is visible from the start rather than hidden inside a forecast.</p>'],
+  ['What happens here','<p>The map shows how the decision lever travels through the market to the outcomes. Each arrow is a relationship the model uses.</p><p>Select any node to see what it does in the calculation and what evidence sits behind it.</p>'],
+  ['What happens here','<p>Every driver has a plausible range. The simulation samples across these ranges thousands of times, so a wide range means more uncertainty in the result.</p><p>Drag the sliders to disagree with the evidence. The dashed outline shows the evidence range, and your change is marked and logged so reviewers can see it.</p><p>The live check updates as you move a slider.</p>'],
+  ['What happens here','<p>The engine runs '+N.toLocaleString()+' scenarios for each option. Each run picks a value for every driver within its range, and decides whether the competitor raises its price.</p><p>The dark band holds the middle half of runs and the light band the middle 90%. The tick marks the median.</p><p>Switch scenarios to force a condition, such as the competitor holding its price.</p>'],
+  ['What happens here','<p>Each driver is swung from the low to the high end of its range while the others stay at their midpoint. The longer the bar, the more the decision depends on that driver.</p><p>A dark bar crosses zero, which means it could change which option comes out ahead. If that driver is not well evidenced, it becomes an <strong>Intelligence Gap</strong>.</p><p>Request an investigation to see the loop: evidence is collected, verified and fed back, and everything reruns.</p>'],
+  ['What happens here','<p>The decision is yours. Recording it captures the option, the reasoning, the assumptions accepted and the Signals to watch.</p><p>Market Memory keeps the record so that later outcomes can be compared with the scenarios. In this prototype it lasts until you close the page.</p>']
+];
+function renderRail(){
+  var h=HOW[S.step], g=grounding(), sim=simulate(S.scenario);
+  var memHtml = S.memory.slice(0,6).map(function(m){return '<div><time>'+m.t+'</time>'+esc(m.text)+'</div>';}).join('');
+  document.getElementById('rail').innerHTML =
+    '<div class="how"><div class="lbl">How this step works</div><h3>'+h[0]+'</h3>'+h[1]+'</div>'+
+    '<div class="card" style="padding:18px"><div class="lbl">Current reading</div>'+
+      '<div style="margin-top:10px;font-size:14px">Option A ahead on gross profit in <strong class="mono">'+Math.round(sim.pA*100)+'%</strong> of runs.</div>'+
+      '<div style="margin-top:6px;font-size:13px" class="muted">'+esc(g.why)+'</div></div>'+
+    '<div class="card" style="padding:18px"><div class="lbl">Market Memory · this simulation</div><div class="mem" style="margin-top:6px">'+memHtml+'</div></div>';
+}
+
+function viewBrief(){
+  var b=S.brief;
+  return '<section class="card" aria-labelledby="qh"><h2 id="qh">What are you deciding?</h2>'+
+    '<p class="intro muted">Describe the decision as you would to a colleague.</p>'+
+    '<label class="sr" for="q">Your question</label><textarea id="q" class="field" rows="3" style="margin-top:14px">'+esc(b.question)+'</textarea>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px"><button class="btn" data-act="draft">Draft brief</button>'+
+    '<button class="btn2" data-act="example">Try another example</button></div></section>'+
+    '<section class="card"><h2>Brief</h2><div class="grid2" style="margin-top:16px">'+
+      '<div class="tile"><div class="lbl">Option A</div><div style="font-weight:600;margin-top:4px">Raise list price '+b.price+'%</div></div>'+
+      '<div class="tile"><div class="lbl">Option B</div><div style="font-weight:600;margin-top:4px">Hold price, absorb input costs</div></div></div>'+
+    '<div class="grid3" style="margin-top:16px">'+
+      '<div class="fl"><label class="lbl" for="f-price">Price increase (%)</label><input id="f-price" class="field mono" type="number" min="1" max="30" step="1" value="'+b.price+'" data-brief="price"></div>'+
+      '<div class="fl"><label class="lbl" for="f-city">City</label><input id="f-city" class="field" value="'+esc(b.city)+'" data-brief="city"></div>'+
+      '<div class="fl"><label class="lbl" for="f-h">Horizon (months)</label><input id="f-h" class="field mono" type="number" min="1" max="24" value="'+b.horizon+'" data-brief="horizon"></div></div>'+
+    '<div class="fl" style="margin-top:14px"><label class="lbl" for="f-ch">Channel</label><input id="f-ch" class="field" value="'+esc(b.channel)+'" data-brief="channel"></div>'+
+    '<div style="margin-top:16px"><div class="lbl">Outcomes measured</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><span class="chip">Volume</span><span class="chip">Gross profit</span></div></div>'+
+    '</section>'+
+    '<div class="banner info"><span>This simulation explores a range of outcomes under assumptions you can see and change. It does not predict a single result or make the decision.</span></div>'+
+    navRow('', 'Assemble evidence');
+}
+function viewEvidence(){
+  var c={Fact:0,Inference:0,Hypothesis:0,Assumption:0,Unknown:0};
+  ORDER.forEach(function(k){c[S.drv[k].state]++;});
+  var tiles='<div class="tile"><div class="v">'+ORDER.length+'</div><div class="muted" style="font-size:13px">Drivers</div></div>'+
+    ['Fact','Inference','Hypothesis','Assumption','Unknown'].map(function(s){return '<div class="tile"><div class="v">'+c[s]+'</div><div style="margin-top:2px">'+badge(s)+'</div></div>';}).join('');
+  var rows=ORDER.map(function(k){var d=S.drv[k], e=EVIDENCE[k];
+    return '<tr'+(d.state==='Unknown'?' class="unk"':'')+'><td><div style="font-weight:500">'+e.name+'</div><div class="muted" style="font-size:13px">'+e.desc+'</div></td>'+
+      '<td>'+badge(d.state)+'</td><td class="mono">'+frange(k)+'</td><td>'+esc(d.src)+'</td><td class="muted">'+esc(d.recency)+
+      '<div class="cov" aria-label="Coverage '+COVER[d.state]+'%"><i style="width:'+COVER[d.state]+'%"></i></div></td></tr>';}).join('');
+  var unk=ORDER.filter(function(k){return S.drv[k].state==='Unknown';});
+  return '<section><h2 style="font-size:20px">How much do we actually know?</h2><p class="intro muted">Evidence assembled from the Intelligence Layer and your company data for each driver this decision depends on.</p></section>'+
+    '<div class="tiles">'+tiles+'</div>'+
+    '<section class="card" style="padding:8px 12px"><div class="tblbox"><table><thead><tr><th>Driver</th><th>State</th><th>Range</th><th>Evidence</th><th>Most recent</th></tr></thead><tbody>'+rows+'</tbody></table></div></section>'+
+    (unk.length?'<div class="banner warn"><span><strong>'+unk.length+' driver'+(unk.length>1?'s have':' has')+' no evidence.</strong> The simulation can still run, but it will say so in its results.</span></div>':
+      '<div class="banner info"><span>Every driver now has some evidence behind it.</span></div>')+
+    navRow('Back to brief','Map the system');
+}
+function arrow(dir){
+  if(dir==='r') return '<div class="ar"><svg width="34" height="14" viewBox="0 0 34 14" aria-hidden="true"><path d="M1 7H30M25 2l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>';
+  if(dir==='d') return '<div class="ar"><svg width="14" height="38" viewBox="0 0 14 38" aria-hidden="true"><path d="M7 1V34M2 29l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>';
+  return '<div class="ar"><svg width="14" height="38" viewBox="0 0 14 38" aria-hidden="true"><path d="M7 37V4M2 9l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></div>';
+}
+var FIXED = {
+  list:{name:'Your list price', kind:'lever', desc:'The decision lever. Option A raises it; Option B holds it.', how:'Option A applies the price increase from the brief; Option B leaves it at today’s level.'},
+  shelf:{name:'Shelf price', desc:'What shoppers pay in the outlet.', how:'Your list-price change multiplied by retailer pass-through.'},
+  rel:{name:'Price vs competitors', desc:'Your shelf price relative to competing brands.', how:'Your shelf-price change, minus the competitor’s change when it also raises.'},
+  vol:{name:'Volume', kind:'out', desc:'Outcome metric.', how:'Elasticity times the relative price change, minus any loss from outlets cutting stock.'},
+  gp:{name:'Gross profit', kind:'out', desc:'Outcome metric.', how:'Volume times the new unit margin, compared with today. Unit cost starts at 50% of today’s price.'},
+  rm:{name:'Retailer margin', desc:'What the outlet keeps per unit.', how:'Squeezed by the part of the increase the retailer absorbs instead of passing on.'},
+  av:{name:'Availability', desc:'Whether your product is on the shelf.', how:'Falls when squeezed outlets cut stock, which lowers volume.'}
+};
+function node(id){
+  var isD=!!EVIDENCE[id], name=isD?EVIDENCE[id].short:FIXED[id].name, cls='node'+(FIXED[id]&&FIXED[id].kind?' '+FIXED[id].kind:'');
+  var sub=isD?badge(S.drv[id].state):'<span class="muted" style="font-size:12px;font-weight:400">'+(FIXED[id].kind==='out'?'Outcome':FIXED[id].kind==='lever'?'Decision lever':'Derived')+'</span>';
+  return '<button class="'+cls+'" data-node="'+id+'" aria-pressed="'+(S.sel===id)+'">'+name+sub+'</button>';
+}
+function viewMap(){
+  var place=function(c,r,html){return '<div style="grid-column:'+c+';grid-row:'+r+'">'+html+'</div>';};
+  var g='';
+  g+=place(3,1,node('pt'))+place(5,1,node('cm'))+place(7,1,node('el'))+place(9,1,node('ic'));
+  g+=place(3,2,arrow('d'))+place(5,2,arrow('d'))+place(7,2,arrow('d'))+place(9,2,arrow('d'));
+  g+=place(1,3,node('list'))+place(2,3,arrow('r'))+place(3,3,node('shelf'))+place(4,3,arrow('r'))+place(5,3,node('rel'))+place(6,3,arrow('r'))+place(7,3,node('vol'))+place(8,3,arrow('r'))+place(9,3,node('gp'));
+  g+=place(3,4,arrow('d'))+place(7,4,arrow('u'));
+  g+=place(3,5,node('rm'))+place(4,5,arrow('r'))+place(5,5,node('sk'))+place(6,5,arrow('r'))+place(7,5,node('av'));
+  var id=S.sel, isD=!!EVIDENCE[id], info=isD?EVIDENCE[id]:FIXED[id];
+  var detail='<div class="lbl">Selected</div><h3 style="font-size:18px;margin-top:6px">'+(isD?info.name:info.name)+'</h3>'+
+    (isD?'<div style="margin-top:8px">'+badge(S.drv[id].state)+'</div>':'')+
+    '<p class="muted" style="margin:12px 0 0">'+info.desc+'</p>'+
+    '<div style="margin-top:14px"><div class="kv"><span class="muted">In the model</span><span>'+info.how+'</span></div>'+
+    (isD?'<div class="kv"><span class="muted">Range</span><span class="mono">'+frange(id)+'</span></div><div class="kv"><span class="muted">Evidence</span><span>'+esc(S.drv[id].src)+'</span></div>':'')+'</div>'+
+    (isD?'<div style="margin-top:14px"><button class="btn2" data-step="3">Adjust this assumption</button></div>':'');
+  return '<section><h2 style="font-size:20px">How this part of the market connects</h2><p class="intro muted">Proposed from Connected Market Intelligence. Select a node to see how it enters the calculation.</p></section>'+
+    '<div class="layout" style="grid-template-columns:minmax(0,1fr);padding:0;gap:18px">'+
+    '<section class="card"><div class="mapbox"><div class="map">'+g+'</div></div>'+
+    '<div class="legend"><span><span class="sw" style="background:var(--band-soft);border:1px solid var(--accent)"></span>Outcome</span><span><span class="sw" style="border:1px dashed var(--line-2)"></span>Decision lever</span><span>Arrows show direction of influence</span></div></section>'+
+    '<section class="card">'+detail+'</section></div>'+
+    navRow('Back to evidence','Set assumptions');
+}
+function bandHtml(k){
+  var e=EVIDENCE[k], d=S.drv[k], span=e.max-e.min, pos=function(v){return (v-e.min)/span*100;};
+  var evd=S.drv[k]._ev||{lo:e.lo,hi:e.hi};
+  return '<div class="band" id="band-'+k+'"><div class="base"></div>'+
+    '<div class="ev" style="left:'+pos(evd.lo)+'%;width:'+Math.max(pos(evd.hi)-pos(evd.lo),1)+'%"></div>'+
+    '<div class="rng" style="left:'+pos(d.lo)+'%;width:'+Math.max(pos(d.hi)-pos(d.lo),1)+'%"></div>'+
+    '<div class="mid" style="left:'+pos((d.lo+d.hi)/2)+'%"></div></div>';
+}
+function viewAssumptions(){
+  var rows=ORDER.map(function(k){var e=EVIDENCE[k], d=S.drv[k];
+    return '<div class="drv"><div><div style="font-weight:600">'+e.name+'</div><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px">'+badge(d.state)+
+      (d.edited?'<span class="edited" id="ed-'+k+'">Edited by you</span>':'<span class="edited" id="ed-'+k+'" hidden>Edited by you</span>')+'</div>'+
+      '<p class="muted" style="margin:8px 0 0;font-size:13.5px">'+e.desc+'</p><div class="muted" style="font-size:12.5px;margin-top:4px">Evidence: '+esc(d.src)+'</div></div>'+
+      '<div>'+bandHtml(k)+
+      '<div class="sl"><label for="lo-'+k+'" class="muted">Low</label><input type="range" id="lo-'+k+'" data-k="'+k+'" data-end="lo" min="'+e.min+'" max="'+e.max+'" step="'+e.step+'" value="'+d.lo+'"><span class="mono" id="vlo-'+k+'">'+fv(k,d.lo)+'</span></div>'+
+      '<div class="sl"><label for="hi-'+k+'" class="muted">High</label><input type="range" id="hi-'+k+'" data-k="'+k+'" data-end="hi" min="'+e.min+'" max="'+e.max+'" step="'+e.step+'" value="'+d.hi+'"><span class="mono" id="vhi-'+k+'">'+fv(k,d.hi)+'</span></div>'+
+      '<button class="btn2" style="min-height:36px;margin-top:6px;font-size:13px" data-reset="'+k+'"'+(d.edited?'':' hidden')+' id="rs-'+k+'">Reset to evidence</button>'+
+      '</div></div>';}).join('');
+  return '<section><h2 style="font-size:20px">What are we taking as given?</h2><p class="intro muted">Each driver starts from its evidence range. Move the sliders if you disagree; your changes are marked and logged.</p></section>'+
+    '<div class="banner info" id="live"></div>'+
+    '<section class="card" style="padding:4px 22px">'+rows+'</section>'+
+    navRow('Back to system map','Run simulation');
+}
+function liveText(){var sim=simulate('base'), g=grounding();
+  return '<span>Live check: Option A ahead on gross profit in <strong class="mono">'+Math.round(sim.pA*100)+'%</strong> of '+N.toLocaleString()+' runs.</span><span class="chip ground '+g.cls+'">'+g.label+'</span>';}
+
+function rangeRow(name, tag, st, dom, unitFn){
+  var pos=function(v){return (v-dom.lo)/(dom.hi-dom.lo)*100;};
+  var grid=dom.ticks.map(function(t){return '<div class="gl" style="left:'+pos(t)+'%"></div>';}).join('');
+  return '<div class="rr"><div><div class="mono" style="font-size:11.5px;color:var(--accent)">'+tag+'</div><div style="font-weight:500">'+name+'</div></div>'+
+    '<div class="plot">'+grid+'<div class="o" style="left:'+pos(st.p5)+'%;width:'+Math.max(pos(st.p95)-pos(st.p5),.6)+'%"></div>'+
+    '<div class="i" style="left:'+pos(st.p25)+'%;width:'+Math.max(pos(st.p75)-pos(st.p25),.6)+'%"></div>'+
+    '<div class="zero" style="left:'+pos(0)+'%"></div><div class="md" style="left:'+pos(st.p50)+'%"></div></div>'+
+    '<div class="mono" style="font-size:13px">'+unitFn(st.p5)+' to '+unitFn(st.p95)+'</div></div>';
+}
+function metricCard(title, sub, a, b){
+  var mn=Math.min(a.p5,b.p5,0), mx=Math.max(a.p95,b.p95,0), pad=(mx-mn)*0.06||0.02;
+  var dom=niceTicks(mn-pad,mx+pad,5);
+  var ticks='<div class="rr" style="min-height:0"><div class="axisgap"></div><div class="ticks">'+dom.ticks.map(function(t){return '<span style="left:'+((t-dom.lo)/(dom.hi-dom.lo)*100)+'%">'+sgn(t)+'</span>';}).join('')+'</div><div class="axisgap"></div></div>';
+  return '<section class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px"><h3>'+title+'</h3><span class="muted" style="font-size:12.5px">'+sub+'</span></div>'+
+    '<div style="margin-top:12px">'+rangeRow('Raise '+S.brief.price+'%','OPTION A',a,dom,sgn)+rangeRow('Hold price','OPTION B',b,dom,sgn)+ticks+'</div></section>';
+}
+function pathways(sim){
+  var ds=sim.draws.slice().sort(function(x,y){return x.a-y.a;}), n=Math.floor(ds.length*0.1);
+  function summ(arr){var t=0,e=0,m=0,a=0; arr.forEach(function(d){t+=d.t;e+=d.e;m+=d.m?1:0;a+=d.a;}); var L=arr.length;
+    return {t:t/L*100,e:e/L,m:m/L*100,a:a/L};}
+  var lo=summ(ds.slice(0,n)), hi=summ(ds.slice(-n));
+  function card(lbl,s){return '<div class="tile"><div class="lbl">'+lbl+'</div><div class="mono" style="font-size:20px;margin-top:4px">'+sgn(s.a)+' gross profit</div>'+
+    '<p class="muted" style="margin:8px 0 0;font-size:13.5px">Pass-through averages <strong>'+Math.round(s.t)+'%</strong>, elasticity <strong>'+fv('el',s.e)+'</strong>, and the competitor raised its price in <strong>'+Math.round(s.m)+'%</strong> of these runs.</p></div>';}
+  return '<section class="card"><h3>What produces each end of Option A’s range</h3><p class="muted" style="margin:4px 0 0;font-size:13.5px">Average conditions in the weakest and strongest 10% of runs.</p>'+
+    '<div class="grid2" style="margin-top:14px">'+card('Weaker end',lo)+card('Stronger end',hi)+'</div></section>';
+}
+function explainText(){
+  var sen=sensitivity(), top=sen.rows[0], second=sen.rows[1], e1=EVIDENCE[top.k], e2=EVIDENCE[second.k];
+  var t='<p>The spread comes mostly from <strong>'+e1.name.toLowerCase()+'</strong>, currently '+frange(top.k)+' and marked '+S.drv[top.k].state+'. On its own it moves Option A’s advantage between '+pts(top.lo)+' and '+pts(top.hi)+' points.</p>';
+  t+='<p>Next is <strong>'+e2.name.toLowerCase()+'</strong> ('+S.drv[second.k].state+'). '+(top.flips?'Because the first driver could flip which option comes out ahead, it is worth investigating before committing.':'Neither flips the preferred option at its current range.')+'</p>';
+  return t;
+}
+function viewOutcomes(){
+  var sim=simulate(S.scenario), g=grounding();
+  var scen=Object.keys(SCEN).map(function(k){return '<button class="pill" data-scen="'+k+'" aria-pressed="'+(S.scenario===k)+'">'+SCEN[k]+'</button>';}).join('');
+  var banner = g.cls==='g-exploratory' ? '<div class="banner warn"><span><strong>Exploratory.</strong> '+esc(g.why)+' Use these ranges to structure the discussion, not to commit resources.</span><button class="btn2" data-step="5">See what drives the range</button></div>'
+    : '<div class="banner info"><span><strong>'+g.label+'.</strong> '+esc(g.why)+'</span></div>';
+  return banner+
+    '<section style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center"><h2 style="font-size:20px">What could happen under each option?</h2><div class="scen" role="group" aria-label="Scenario">'+scen+'</div></section>'+
+    '<section class="card"><div class="verdict"><div><div class="lbl">Option A ahead on gross profit</div><div class="big" style="margin-top:6px">'+Math.round(sim.pA*100)+'%</div><div class="muted" style="font-size:13px;margin-top:4px">of '+N.toLocaleString()+' runs · '+SCEN[S.scenario]+'</div></div>'+
+    '<div class="meter" aria-hidden="true"><i style="width:'+(sim.pA*100)+'%"></i></div></div></section>'+
+    metricCard('Volume change vs today','% at end of horizon',sim.A.vol,sim.B.vol)+
+    metricCard('Gross profit change vs today','% at end of horizon',sim.A.profit,sim.B.profit)+
+    '<div class="legend" style="border:0;margin:0;padding:0"><span><span class="sw" style="background:var(--band-strong)"></span>Middle half of runs</span><span><span class="sw" style="background:var(--band)"></span>Middle 90% of runs</span><span><span style="height:14px;border-left:1.5px dashed var(--muted)"></span>No change</span></div>'+
+    pathways(sim)+
+    '<section class="card"><div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center"><h3>Why is the range this wide?</h3><button class="btn2" data-act="explain">'+(S.explain?'Hide explanation':'Explain this range')+'</button></div>'+
+    (S.explain?'<div class="explain">'+explainText()+'</div>':'')+'</section>'+
+    navRow('Adjust assumptions','Test sensitivity');
+}
+function gapCard(k, decisive){
+  var e=EVIDENCE[k], d=S.drv[k], g=S.gaps[k]||{status:'idle'}, stages=['Scoped','Collecting','Verifying','Evidence received'];
+  var pipe='';
+  if(g.status!=='idle'){pipe='<div class="pipe">'+stages.map(function(s,i){var cls=i<g.stage?'done':i===g.stage&&g.status==='running'?'now':g.status==='done'?'done':'';
+    return '<div><span class="dot '+cls+'"></span><span'+(i===g.stage&&g.status==='running'?' style="font-weight:600"':'')+'>'+s+'</span></div>';}).join('')+'</div>';}
+  var result = g.status==='done' ? '<div class="explain" style="margin-top:14px"><div class="lbl">New evidence</div><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px"><span class="mono muted" style="text-decoration:line-through">'+frange(k,g.before)+'</span><span aria-hidden="true">→</span><span class="mono" style="font-size:17px;font-weight:500">'+frange(k)+'</span>'+badge(d.state)+'</div>'+
+      '<p style="margin-top:8px">Option A ahead in <strong class="mono">'+Math.round(g.pBefore*100)+'%</strong> of runs before, <strong class="mono">'+Math.round(g.pAfter*100)+'%</strong> after.</p></div>' : '';
+  var q={pt:'How much of a supplier price increase do '+esc(S.brief.city)+' dukas and kiosks pass on to shelf price in this category?',
+         el:'How sensitive is volume to our price relative to competing brands in this channel?',
+         cm:'Is the main competitor likely to raise its price within two months?',
+         sk:'Do outlets cut stock of a brand when they absorb part of a price increase?'}[k];
+  return '<div class="gap'+(decisive?'':' quiet')+'"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center"><div class="lbl" style="color:var(--ink)">'+(decisive?'Intelligence Gap · could change the decision':'Possible gap')+'</div>'+badge(d.state)+'</div>'+
+    '<div style="font-weight:600;font-size:16px;margin-top:8px;line-height:1.4">'+q+'</div>'+
+    (g.status==='idle'?'<div style="margin-top:12px"><div class="kv"><span class="muted">Method</span><span>'+e.inv.method+'</span></div><div class="kv"><span class="muted">Collected by</span><span>'+e.inv.who+'</span></div><div class="kv"><span class="muted">Where</span><span>'+esc(S.brief.city)+', sampled outlets</span></div></div>'+
+      '<button class="'+(decisive?'btn':'btn2')+'" style="margin-top:14px;width:100%" data-gap="'+k+'">Request investigation</button>':'')+
+    pipe+result+'</div>';
+}
+function viewSensitivity(){
+  var sen=sensitivity(), all=[sen.base]; sen.rows.forEach(function(r){all.push(r.lo,r.hi);}); all.push(0);
+  var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all), pad=(mx-mn)*0.05||0.02, dom=niceTicks(mn-pad,mx+pad,5);
+  var pos=function(v){return (v-dom.lo)/(dom.hi-dom.lo)*100;};
+  var grid=dom.ticks.map(function(t){return '<div class="gl" style="position:absolute;top:0;bottom:0;width:1px;background:var(--line);left:'+pos(t)+'%"></div>';}).join('');
+  var rows=sen.rows.map(function(r){var e=EVIDENCE[r.k];
+    return '<div class="tr"><div><div style="font-weight:'+(r.flips?600:500)+'">'+e.name+'</div><div style="margin-top:4px">'+badge(S.drv[r.k].state)+'</div></div>'+
+      '<div class="tplot">'+grid+'<div style="position:absolute;top:0;bottom:0;border-left:1.5px dashed var(--muted);left:'+pos(0)+'%"></div>'+
+      '<div class="bar'+(r.flips?' flip':'')+'" style="left:'+pos(r.lo)+'%;width:'+Math.max(pos(r.hi)-pos(r.lo),.6)+'%"></div><div class="basel" style="left:'+pos(sen.base)+'%"></div></div>'+
+      '<div class="mono" style="font-size:13px">'+pts(r.lo)+' to '+pts(r.hi)+'</div></div>';}).join('');
+  var ticks='<div class="tr" style="min-height:0"><div></div><div class="ticks">'+dom.ticks.map(function(t){return '<span style="left:'+pos(t)+'%">'+pts(t,0)+'</span>';}).join('')+'</div><div></div></div>';
+  var weak=function(k){return /Unknown|Hypothesis|Assumption/.test(S.drv[k].state);};
+  var decisive=sen.rows.filter(function(r){return r.flips && weak(r.k) && EVIDENCE[r.k].inv;}).map(function(r){return r.k;});
+  var other=sen.rows.filter(function(r){return decisive.indexOf(r.k)<0 && weak(r.k) && EVIDENCE[r.k].inv;}).map(function(r){return r.k;});
+  var doneGaps=Object.keys(S.gaps).filter(function(k){return S.gaps[k].status!=='idle' && decisive.indexOf(k)<0 && other.indexOf(k)<0;});
+  var gaps=decisive.map(function(k){return gapCard(k,true);}).join('')+doneGaps.map(function(k){return gapCard(k,true);}).join('');
+  if(!decisive.length && !doneGaps.length) gaps='<div class="banner info"><span>No weakly evidenced driver can flip the preferred option at its current range. The decision rests on evidence you can see.</span></div>';
+  return '<section><h2 style="font-size:20px">Which unknowns could change the decision?</h2><p class="intro muted">Each bar shows how far Option A’s gross-profit advantage over Option B moves when one driver swings across its range. The solid line is the midpoint case; the dashed line is where both options are equal.</p></section>'+
+    '<section class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px"><h3>Advantage of Option A over B, by driver</h3><span class="muted" style="font-size:12.5px">percentage points of gross profit · midpoint '+pts(sen.base)+'</span></div><div style="margin-top:12px">'+rows+ticks+'</div>'+
+    '<div class="legend"><span><span class="sw" style="background:var(--band-strong)"></span>Could flip the preferred option</span><span><span class="sw" style="background:var(--band)"></span>Moves the margin, no flip</span></div></section>'+
+    '<section style="display:flex;flex-direction:column;gap:14px">'+gaps+'</section>'+
+    (other.length?'<details class="card"><summary style="cursor:pointer;font-weight:600">Other drivers you could investigate ('+other.length+')</summary><div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">'+other.map(function(k){return gapCard(k,false);}).join('')+'</div></details>':'')+
+    navRow('Back to outcomes','Record the decision');
+}
+function viewDecision(){
+  var sim=simulate('base'), g=grounding();
+  var acc=ORDER.filter(function(k){return S.drv[k].state!=='Fact';}).map(function(k){return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px">'+badge(S.drv[k].state)+EVIDENCE[k].name+': <span class="mono">'+frange(k)+'</span>'+(S.drv[k].edited?' <span class="edited">edited by you</span>':'')+'</div>';}).join('');
+  var saved=S.decisions.map(function(d){return '<div class="tile"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px"><strong>'+esc(d.option)+'</strong><span class="mono muted" style="font-size:12px">'+d.t+'</span></div>'+
+    '<div class="muted" style="font-size:13px;margin-top:4px">'+d.ground+' · Option A ahead in '+d.pA+'% of runs · owner '+esc(d.owner||'unassigned')+'</div>'+
+    (d.why?'<p style="margin:8px 0 0;font-size:14px">'+esc(d.why)+'</p>':'')+'<div class="muted" style="font-size:13px;margin-top:6px">Watching: '+esc(d.signals.join(', ')||'no Signals')+'</div></div>';}).join('');
+  return '<section class="card" style="background:var(--brand);color:var(--brand-ink);border-color:var(--brand)"><div class="lbl" style="color:var(--brand-muted)">Where the simulation stands</div>'+
+    '<div class="grid2" style="margin-top:12px"><div><div style="font-size:13px;color:var(--brand-muted)">Option A · Raise '+S.brief.price+'%</div><div class="mono" style="font-size:20px;margin-top:2px">'+sgn(sim.A.profit.p5)+' to '+sgn(sim.A.profit.p95)+'</div><div style="font-size:12.5px;color:var(--brand-muted)">gross profit, middle 90% of runs</div></div>'+
+    '<div><div style="font-size:13px;color:var(--brand-muted)">Option B · Hold price</div><div class="mono" style="font-size:20px;margin-top:2px">'+sgn(sim.B.profit.p5)+' to '+sgn(sim.B.profit.p95)+'</div><div style="font-size:12.5px;color:var(--brand-muted)">gross profit, middle 90% of runs</div></div></div>'+
+    '<p style="margin:14px 0 0;font-size:14px;color:var(--brand-muted)">'+g.label+'. Option A ahead in '+Math.round(sim.pA*100)+'% of runs.</p></section>'+
+    '<form class="card" id="decform" style="display:flex;flex-direction:column;gap:18px"><div><h2>Record the decision</h2><p class="muted" style="margin:4px 0 0">The choice is your team’s. Recording it lets Market Memory compare what happens with what was expected.</p></div>'+
+    '<fieldset style="border:0;padding:0;margin:0"><legend class="lbl" style="margin-bottom:8px">Option chosen</legend><div class="grid2">'+
+      '<label class="opt"><input type="radio" name="opt" value="Raise list price '+S.brief.price+'%" checked><span><strong style="display:block">Raise list price '+S.brief.price+'%</strong><span class="muted" style="font-size:13px">Option A</span></span></label>'+
+      '<label class="opt"><input type="radio" name="opt" value="Hold price"><span><strong style="display:block">Hold price</strong><span class="muted" style="font-size:13px">Option B</span></span></label></div></fieldset>'+
+    '<div class="fl"><label class="lbl" for="why">Reasoning</label><textarea id="why" class="field" rows="3" placeholder="Why your team chose this option"></textarea></div>'+
+    '<div><div class="lbl">Assumptions accepted</div><div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">'+acc+'</div></div>'+
+    '<fieldset style="border:0;padding:0;margin:0"><legend class="lbl">Signals to watch</legend>'+
+      '<label class="check"><input type="checkbox" name="sig" value="Competitor shelf price" checked>Competitor shelf price, any change</label>'+
+      '<label class="check"><input type="checkbox" name="sig" value="Outlet stockouts" checked>Outlet stockouts rising</label>'+
+      '<label class="check"><input type="checkbox" name="sig" value="Reorder frequency" checked>Reorder frequency falling below today’s level</label></fieldset>'+
+    '<div class="fl"><label class="lbl" for="owner">Decision owner</label><input id="owner" class="field" placeholder="Name"></div>'+
+    '<div class="navrow"><button type="button" class="btn2" data-step="5">Back to sensitivity</button><button type="submit" class="btn">Save to Market Memory</button></div></form>'+
+    (saved?'<section class="card"><h3>Saved decisions</h3><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">'+saved+'</div></section>':'');
+}
+
+/* ---------- Render + events ---------- */
+function render(){
+  renderShell();
+  document.getElementById('view').innerHTML = VIEWS[S.step]();
+  if(S.step===3) document.getElementById('live').innerHTML = liveText();
+  renderRail();
+}
+function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i)); render(); window.scrollTo({top:0, behavior:'auto'});}
+
+var CITIES=['Nairobi','Mombasa','Kisumu','Lagos','Abuja','Accra','Kumasi','Kampala','Dar es Salaam','Kigali','Abidjan','Dakar','Lusaka','Addis Ababa','Johannesburg','Cairo','Casablanca'];
+var EXAMPLES=["If we raise our 330ml can price by 8% in Accra's supermarkets, what happens to volume and profit over 9 months versus holding?",
+  "Should we raise price 12% in Kampala kiosks over the next 6 months or hold?",
+  "If we raise our 500ml price by 10% in Nairobi's dukas and kiosks, what could happen to volume and profit over the next six months, compared with holding price?"];
+var exIdx=0;
+function draft(){
+  var q=document.getElementById('q').value, b=S.brief; b.question=q;
+  var m=q.match(/(\d+(?:\.\d+)?)\s*%/); if(m) b.price=Math.max(1,Math.min(30,Math.round(parseFloat(m[1]))));
+  var c=CITIES.filter(function(x){return q.toLowerCase().indexOf(x.toLowerCase())>=0;})[0]; if(c) b.city=c;
+  var h=q.match(/(\d+)\s*months?/i); if(h) b.horizon=parseInt(h[1],10); else if(/six months/i.test(q)) b.horizon=6;
+  if(/supermarket|modern trade|retail chain/i.test(q)) b.channel='Modern trade (supermarkets)';
+  else if(/duka|kiosk|traditional/i.test(q)) b.channel='Traditional trade (dukas, kiosks)';
+  logMem('Brief drafted: raise '+b.price+'% or hold, '+b.city+', '+b.horizon+' months.');
+  render(); toast('Brief updated');
+}
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest('[data-step],[data-act],[data-node],[data-scen],[data-gap],[data-reset]'); if(!t) return;
+  if(t.dataset.step!=null){ev.preventDefault(); go(parseInt(t.dataset.step,10)); return;}
+  if(t.dataset.node){S.sel=t.dataset.node; render(); return;}
+  if(t.dataset.scen){S.scenario=t.dataset.scen; render(); return;}
+  if(t.dataset.reset){var k=t.dataset.reset, base=S.drv[k]._ev||{lo:EVIDENCE[k].lo,hi:EVIDENCE[k].hi}; S.drv[k].lo=base.lo; S.drv[k].hi=base.hi; S.drv[k].edited=false; logMem(EVIDENCE[k].name+' reset to evidence ('+frange(k)+').'); render(); return;}
+  if(t.dataset.gap){runGap(t.dataset.gap); return;}
+  var a=t.dataset.act;
+  if(a==='draft') draft();
+  if(a==='example'){exIdx=(exIdx)%EXAMPLES.length; document.getElementById('q').value=EXAMPLES[exIdx]; exIdx++; draft();}
+  if(a==='explain'){S.explain=!S.explain; render();}
+});
+document.addEventListener('input',function(ev){
+  var el=ev.target;
+  if(el.dataset.k){
+    var k=el.dataset.k, d=S.drv[k], v=parseFloat(el.value);
+    if(el.dataset.end==='lo'){d.lo=Math.min(v,d.hi); if(v>d.hi) el.value=d.hi;} else {d.hi=Math.max(v,d.lo); if(v<d.lo) el.value=d.lo;}
+    var ev0=d._ev||{lo:EVIDENCE[k].lo,hi:EVIDENCE[k].hi};
+    d.edited = (d.lo!==ev0.lo || d.hi!==ev0.hi);
+    document.getElementById('band-'+k).outerHTML = bandHtml(k);
+    document.getElementById('vlo-'+k).textContent=fv(k,d.lo); document.getElementById('vhi-'+k).textContent=fv(k,d.hi);
+    document.getElementById('ed-'+k).hidden=!d.edited; document.getElementById('rs-'+k).hidden=!d.edited;
+    document.getElementById('live').innerHTML=liveText();
+    renderShell(); renderRail();
+  }
+  if(el.dataset.brief){var f=el.dataset.brief; S.brief[f]=(f==='price'||f==='horizon')?Math.max(1,parseInt(el.value||'1',10)):el.value; renderShell(); renderRail();}
+});
+document.addEventListener('change',function(ev){
+  var el=ev.target;
+  if(el.dataset.k){var k=el.dataset.k; if(S.drv[k].edited) logMem('You set '+EVIDENCE[k].name.toLowerCase()+' to '+frange(k)+'.'); renderRail();}
+  if(el.dataset.brief){logMem('Brief changed: '+el.dataset.brief+' set to '+S.brief[el.dataset.brief]+'.'); render();}
+});
+document.addEventListener('submit',function(ev){
+  if(ev.target.id!=='decform') return; ev.preventDefault();
+  var f=ev.target, sim=simulate('base');
+  var rec={option:f.querySelector('input[name=opt]:checked').value, why:document.getElementById('why').value.trim(), owner:document.getElementById('owner').value.trim(),
+    signals:[].slice.call(f.querySelectorAll('input[name=sig]:checked')).map(function(x){return x.value;}), ground:grounding().label, pA:Math.round(sim.pA*100), t:now()};
+  S.decisions.unshift(rec); logMem('Decision recorded: '+rec.option+'. Watching '+rec.signals.length+' Signals.');
+  render(); toast('Saved to Market Memory');
+});
+function runGap(k){
+  var g=S.gaps[k]={status:'running', stage:0, before:{lo:S.drv[k].lo,hi:S.drv[k].hi}, pBefore:simulate('base').pA};
+  logMem('Intelligence Gap raised on '+EVIDENCE[k].name.toLowerCase()+'. Investigation requested.');
+  render();
+  var timer=setInterval(function(){
+    g.stage++;
+    if(g.stage>=3){
+      clearInterval(timer);
+      var inv=EVIDENCE[k].inv, d=S.drv[k], oldState=d.state;
+      d.lo=inv.lo; d.hi=inv.hi; d.state=inv.state; d.src=inv.src+' (simulated)'; d.recency='Just now'; d.edited=false; d._ev={lo:inv.lo,hi:inv.hi};
+      g.status='done'; g.pAfter=simulate('base').pA;
+      logMem(EVIDENCE[k].name+': '+frange(k,g.before)+' ('+oldState+') → '+frange(k)+' ('+inv.state+'). Simulation rerun.');
+      toast('New evidence received. Simulation rerun.');
+    }
+    if(S.step===5) render();
+  }, 1100);
+}
+
+render();
+})();
+</script>
+</body>
+</html>
