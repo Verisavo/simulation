@@ -1,0 +1,16 @@
+{
+  "name": "verisavo-market-simulation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Verisavo Market Simulation: explore how a market could respond to a decision, under assumptions you can see and change.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}
