@@ -28,6 +28,7 @@ export default function Sidebar({ current, gapCount, onSimulations, onEvidence, 
         {item("simulations", "Simulations", onSimulations)}
         {item("gaps", "Intelligence Gaps", onGaps, <span className="sm-count" aria-label={`${gapCount} open`}>{gapCount}</span>)}
       </ul>
+      <button type="button" className="sm-nav-item sm-restart" onClick={() => window.location.reload()}>Start a new simulation</button>
       <p className="sm-private">Your company data remains private, protected and under your control.</p>
     </nav>
   );

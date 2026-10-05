@@ -7,7 +7,8 @@ export default function ScenariosStep({ scenarios, onScenarios, cost, onCost, ga
   const update = (id, patch) => onScenarios(scenarios.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   const add = () => {
     const id = IDS.find((i) => !scenarios.some((s) => s.id === i));
-    if (id) onScenarios([...scenarios, { id, price: 850, comp: "holds" }]);
+    const price = [850, 775, 725, 900, 825].find((p) => !scenarios.some((s) => s.price === p)) ?? 850;
+    if (id) onScenarios([...scenarios, { id, price, comp: "holds" }]);
   };
   const remove = (id) => onScenarios(scenarios.filter((s) => s.id !== id));
   const [kl, kh] = kioskRange(gapClosed);
