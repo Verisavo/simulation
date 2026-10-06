@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verisavo Market Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+__CSS__
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <button class="logo" id="home" aria-label="Verisavo home"><i></i>Verisavo<span class="prod">Market Simulation</span></button>
+    <nav class="journey" id="journey" aria-label="Steps">
+      <button data-go="ask"><span class="n">1</span><span class="t">Ask</span></button><span class="sep"></span>
+      <button data-go="setup"><span class="n">2</span><span class="t">Set up</span></button><span class="sep"></span>
+      <button data-go="results"><span class="n">3</span><span class="t">Results</span></button>
+    </nav>
+    <button class="btn sm new" id="newQ" hidden>+ New simulation</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Step 1: Ask -->
+  <section id="vAsk">
+    <div class="shome">
+      <span class="eyebrow"><i></i>Connected intelligence for African markets</span>
+      <h1>Test a market decision <span class="grad">before you make it.</span></h1>
+      <p class="lede">Describe a decision or a change in any African market. Verisavo builds the market around it, simulates how it could respond, and shows what is still unknown.</p>
+      <form class="sask" id="ask">
+        <textarea id="q" rows="2" aria-label="Your market question" placeholder="What could happen if we reduce the price of our detergent by 15% in Kano?"></textarea>
+        <div class="askrow">
+          <label class="chipsel" title="Location"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 14.5s4.5-4.2 4.5-7.8a4.5 4.5 0 0 0-9 0c0 3.6 4.5 7.8 4.5 7.8Z"/><circle cx="8" cy="6.7" r="1.6"/></svg><select id="hLoc" aria-label="Location"><option value="">Location: auto</option></select></label>
+          <label class="chipsel" title="Time period"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.4 1.6"/></svg><select id="hHz" aria-label="Time period"><option value="">Period: auto</option><option value="4">4 weeks</option><option value="8">8 weeks</option><option value="12">12 weeks</option><option value="26">26 weeks</option></select></label>
+          <span class="sp"></span>
+          <span class="askhint">Enter to continue</span>
+          <button class="send" type="submit" aria-label="Continue"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg></button>
+        </div>
+      </form>
+      <div class="sex" id="ex"></div>
+      <div class="howline"><span><b>1</b>Ask a question</span><span><b>2</b>Check what we’ll simulate</span><span><b>3</b>Explore possible futures</span></div>
+    </div>
+  </section>
+
+  <!-- Step 2: Set up -->
+  <section id="vSetup" hidden>
+    <div class="sethead">
+      <span class="label">Step 2 of 3 · Set up</span>
+      <h2>Check what we’ll simulate</h2>
+      <p id="setQ"></p>
+    </div>
+    <div class="setgrid" style="margin-top:20px">
+      <div class="form" id="form"></div>
+      <aside class="preview" id="preview"></aside>
+    </div>
+  </section>
+
+  <!-- Step 3: Results -->
+  <section id="vResults" hidden>
+    <div class="rhead">
+      <div class="rh-l">
+        <div class="rcrumb"><span>Simulations</span><i>/</i><b id="rcGeo"></b><span class="live" id="rcLive">200 runs</span></div>
+        <h1 id="resTitle"></h1>
+        <div class="meta" id="resMeta"></div>
+      </div>
+      <div class="actions">
+        <button class="btn sm" id="aRun">Replay</button>
+        <button class="btn sm" id="aSave">Save scenario</button>
+        <button class="btn sm" id="editSetup">Edit setup</button>
+        <button class="btn sm" id="aInv" hidden>Investigate</button>
+        <button class="btn sm" id="aCmp" hidden>Compare</button>
+        <button class="btn sm pri" id="aRep">Open report</button>
+      </div>
+    </div>
+    <div class="rbar">
+      <nav class="rtabs" id="rtabs" role="tablist" aria-label="Results sections">
+        <button data-rtab="overview" aria-selected="true">Overview</button>
+        <button data-rtab="analysis" aria-selected="false">Analysis<span>4</span></button>
+        <button data-rtab="compare" aria-selected="false">Compare</button>
+        <button data-rtab="memory" aria-selected="false">Market Memory</button>
+      </nav>
+      <div class="boundary" id="boundary"></div>
+    </div>
+    <div class="banner" id="evBanner" hidden></div>
+    <div class="changed" id="changed" hidden></div>
+
+    <div class="tp" data-tp="overview">
+      <div class="nextacts" id="nextActs" aria-label="Summary"></div>
+      <div class="takeaway" id="takeaway"></div>
+      <div class="grid" id="results">
+        <div class="leftcol">
+          <section class="card stage">
+            <div class="stage-top">
+              <nav class="crumbs" id="crumbs" aria-label="Geography"></nav>
+              <div class="seg sm" id="viewSeg"><button data-v="both" aria-pressed="true">Both</button><button data-v="map" aria-pressed="false">Map</button><button data-v="net" aria-pressed="false">Agents</button></div>
+            </div>
+            <div class="hlbar" id="hlBar" hidden></div>
+            <div class="stage-body" id="stageBody">
+              <div class="map-wrap" id="mapWrap">
+                <svg id="map" preserveAspectRatio="none" aria-label="Market signal map"><g id="gC"></g><g id="gR"></g><g id="gP"></g><g id="gN"></g><g id="gL"></g></svg>
+                <canvas id="heat"></canvas>
+                <span class="pane-title">Signals on the map</span>
+                <div class="legend"><span><i class="dot" style="background:var(--blue-2)"></i>Supportive</span><span><i class="dot" style="background:var(--pressure)"></i>Pressure</span></div>
+                <button class="btn sm simhere" id="simHere" hidden></button>
+              </div>
+              <div class="net-wrap" id="netWrap">
+                <svg id="net" viewBox="0 0 440 440" preserveAspectRatio="xMidYMid meet" aria-label="Market agents"><g id="nE"></g><g id="nP"></g><g id="nN"></g></svg>
+                <span class="pane-title">Market agents · tap one to ask why</span>
+              </div>
+            </div>
+            <div class="player">
+              <button class="play" id="bPlay" aria-label="Play">▶</button>
+              <div class="steplbl" id="stepLbl"></div>
+              <div class="scrub"><input type="range" id="scrub" min="0" max="6" step="0.01" value="0" aria-label="Simulation time"><div class="ticks" id="ticks"></div></div>
+              <button class="btn sm" id="whyBtn">Why?</button>
+            </div>
+            <div class="stepnote" id="stepNote"></div>
+            <div class="scenario" id="scenario"></div>
+            <div class="build" id="build" hidden><div class="build-card" id="buildCard"></div></div>
+          </section>
+          <div class="below" id="below"></div>
+        </div>
+        <aside class="intel" id="side" aria-label="Intelligence"></aside>
+      </div>
+    </div>
+
+    <div class="tp" data-tp="analysis" hidden>
+      <section class="exhibits" id="exhibits"></section>
+    </div>
+
+    <div class="tp" data-tp="compare" hidden>
+      <div class="tpintro"><div><h2>Compare options</h2><p>Strategies, saved scenarios or locations under the same conditions. Dots show the central result; bars hold 80% of runs.</p></div></div>
+      <section class="more"><details id="dCmp"><summary hidden><span>Compare options</span></summary><div class="in" id="cmp"></div></details></section>
+    </div>
+
+    <div class="tp" data-tp="memory" hidden>
+      <div class="tpintro"><div><h2>Market Memory</h2><p>What this session changed, when, and why. Runs, decisions, investigations and new evidence are kept so understanding can evolve.</p></div></div>
+      <section class="more"><details id="dMem"><summary hidden><span>Market Memory</span></summary><div class="in" id="mem"></div></details>
+      <details id="dEvi" hidden><summary>Evidence</summary><div class="in" id="evi"></div></details></section>
+    </div>
+  </section>
+
+  <p class="foot">Prototype. Signals, sources, location profiles and figures are illustrative. Percentages are simulated changes across many runs. They show plausible outcomes under stated assumptions, not forecasts. The decision remains with you.</p>
+</main>
+<div class="modal" id="modal" hidden><div class="modal-card" id="modalCard" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+<script>
+const AFRICA=__AFRICA__;
+__ENGINE__
+__UI__
+</script>
+</body>
+</html>
