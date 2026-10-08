@@ -3,426 +3,301 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a living intelligence console on Royal Indigo. One question at the top; the market world
-   (heat map + agent network) in the centre; Market World left, What Is Happening right;
-   a Market Motion timeline beneath; an analysis deck below. Single dark identity by design. */
+/* Layout: one light page. Question on top; the living market (map + agents) with a simple player;
+   one results column beside it; extra detail folded away below. Royal Indigo ink on white. */
 :root{
-  --bg:#1F273F; --bg-deep:#181F33; --surface:#232C47; --surface-2:#29335A; --surface-3:#2F3A63;
-  --line:#34406A; --line-2:#465488; --ink:#F4F4F4; --soft:#A6BFE5; --muted:#8F9DC2; --faint:#6E7CA3;
-  --signal:#618DD0; --signal-2:#80AADC; --pressure:#E3B05C; --pressure-soft:rgba(227,176,92,.14); --signal-soft:rgba(97,141,208,.16);
+  --bg:#FFFFFF; --tint:#F6F8FC; --line:#E3EBF8; --line-2:#CCDDF1;
+  --ink:#1F273F; --muted:#5B6684; --faint:#8A94AE;
+  --blue:#4362B2; --blue-2:#618CD0; --blue-soft:#E3EBF8;
+  --pressure:#C27B14; --pressure-soft:#FBF0DC;
   --f-display:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
   --f-body:"IBM Plex Sans","Segoe UI",Roboto,Arial,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:10px; color-scheme:dark;
+  --r:12px; color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{background:var(--bg);color:var(--ink)}
-body{font-family:var(--f-body);font-size:14px;line-height:1.5;padding-inline:0}
-h1,h2,h3,h4{font-family:var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:balance;font-weight:600}
+body{font-family:var(--f-body);font-size:14px;line-height:1.5;margin:0}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;letter-spacing:-.015em;text-wrap:balance;font-weight:600}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--signal-2);outline-offset:2px}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .mono{font-family:var(--f-mono)}.num{font-variant-numeric:tabular-nums}
 .label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.muted{color:var(--muted)}.soft{color:var(--soft)}
-.up{color:var(--signal-2)}.pr{color:var(--pressure)}
-a{color:var(--soft)}
+.muted{color:var(--muted)}
+.up{color:var(--blue)}.pr{color:var(--pressure)}
 
-/* Top bar */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(24,31,51,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-inline:16px}
-.top-in{max-width:1560px;margin:0 auto;display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
-.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
-.brand b{font-family:var(--f-display);font-size:18px;font-weight:700;letter-spacing:-.02em}
-.brand span{font-size:12.5px;color:var(--soft)}
-.mini-ask{display:flex;gap:6px;flex:1 1 420px;max-width:640px;min-width:0}
-.mini-ask input{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line-2);border-radius:8px;padding:7px 11px;font-size:13.5px}
-.pulse{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft)}
-.pulse canvas{width:96px;height:24px;display:block}
-.tog{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--soft);cursor:pointer;user-select:none;white-space:nowrap}
-.tog input{appearance:none;width:30px;height:17px;border-radius:999px;background:var(--line-2);position:relative;cursor:pointer;flex:none;transition:background .2s}
-.tog input::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--ink);transition:left .2s}
-.tog input:checked{background:var(--signal)}.tog input:checked::after{left:15px}
+.page{max-width:1280px;margin:0 auto;padding-inline:20px;padding-block:0 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.page>*{min-width:0}
+.top{display:flex;align-items:baseline;gap:10px;padding-block:18px 4px}
+.top b{font-family:var(--f-display);font-size:19px;font-weight:700;letter-spacing:-.02em}
+.top span{color:var(--muted);font-size:13px}
 
-.btn{border:1px solid var(--line-2);background:var(--surface-2);border-radius:8px;padding:7px 13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px}
-.btn:hover{border-color:var(--soft)}
-.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
-.btn.primary:hover{background:#fff}
-.btn.sig{background:var(--signal);border-color:var(--signal);color:#fff}
-.btn.ghost{background:transparent}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
-.btn.sm{padding:4px 9px;font-size:12px}
+/* Ask */
+.askzone{display:grid;gap:14px;padding-block:28px 4px}
+.askzone h1{font-size:clamp(28px,4vw,44px);line-height:1.08;letter-spacing:-.03em;font-weight:700;max-width:18ch}
+.askzone.compact{padding-block:4px 0}
+.askzone.compact h1{display:none}
+.askzone .sub{margin:0;color:var(--muted);font-size:15.5px;max-width:58ch}
+.askzone.compact .sub{display:none}
+form.ask{display:flex;gap:8px;border:1.5px solid var(--line-2);border-radius:14px;padding:6px;background:var(--bg);max-width:860px}
+form.ask:focus-within{border-color:var(--blue)}
+form.ask input{flex:1;min-width:0;border:0;background:transparent;padding:10px 12px;font-size:16px}
+form.ask input:focus{outline:none}
+.btn{border:1px solid var(--line-2);background:var(--bg);border-radius:9px;padding:8px 14px;font-weight:500;font-size:13.5px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;color:var(--ink)}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.main{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+.btn.main:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.ex{display:flex;flex-wrap:wrap;gap:6px;max-width:900px}
+.ex button{background:var(--tint);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--muted)}
+.ex button:hover{border-color:var(--blue-2);color:var(--ink)}
+.linkbtn{background:none;border:0;padding:0;color:var(--blue);font-size:13px;text-decoration:underline;text-underline-offset:3px}
 
-/* Landing */
-.landing{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
-.land-in{max-width:1560px;margin:0 auto;padding-inline:16px;padding-block:56px 64px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:center}
-@media (max-width:900px){.land-in{grid-template-columns:minmax(0,1fr);padding-block:28px 36px}.land-map{order:-1;max-height:300px}}
-.land-copy{display:grid;gap:18px;max-width:640px}
-.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:600}
-.land-copy h1{font-size:clamp(32px,4.6vw,56px);line-height:1.05;letter-spacing:-.03em;font-weight:700}
-.land-copy p{margin:0;color:var(--soft);font-size:16px;max-width:54ch}
-.big-ask{display:flex;gap:8px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:6px}
-.big-ask input{flex:1 1 280px;min-width:0;background:transparent;border:0;padding:12px 12px;font-size:17px}
-.big-ask input:focus{outline:none}
-.big-ask:focus-within{border-color:var(--soft)}
-.big-ask .btn{padding:11px 18px;font-size:15px}
-.ex{display:flex;flex-wrap:wrap;gap:6px}
-.ex button{background:transparent;border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--soft)}
-.ex button:hover{border-color:var(--soft);color:var(--ink)}
-.ex-more{background:none;border:0;color:var(--muted);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;padding:2px 0;justify-self:start}
-.land-map{width:100%;height:auto;max-height:560px}
-.land-map path{fill:var(--surface);stroke:var(--line);stroke-width:.8}
-.amb{fill:var(--signal);transform-box:fill-box;transform-origin:center;animation:amb 4.8s ease-out infinite}
-.amb-core{fill:var(--soft)}
-@keyframes amb{0%{opacity:.55;transform:scale(.4)}70%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
-.land-note{font-size:12px;color:var(--faint)}
+.intro-map{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center;border-top:1px solid var(--line);padding-top:24px}
+@media (max-width:820px){.intro-map{grid-template-columns:minmax(0,1fr)}}
+.intro-map svg{width:100%;max-height:440px}
+.intro-map path{fill:var(--tint);stroke:var(--line-2);stroke-width:.8}
+.amb{fill:var(--blue-2);transform-box:fill-box;transform-origin:center;animation:amb 4.8s ease-out infinite}
+.amb-core{fill:var(--blue)}
+@keyframes amb{0%{opacity:.45;transform:scale(.4)}70%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
+.how{display:grid;gap:14px}
+.how ol{margin:0;padding-left:20px;display:grid;gap:8px;color:var(--muted)}
+.how ol b{color:var(--ink);font-weight:600}
 
-/* World */
-.world{max-width:1560px;margin:0 auto;padding-inline:16px;padding-block:14px 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
-.world>*{min-width:0}
-.ctxbar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:12.5px}
-.chipv{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
-.chipv b{font-weight:600}
-.notes{display:grid;gap:3px;font-size:12px;color:var(--muted);width:100%}
-.notes div::before{content:"Assumption · ";color:var(--pressure);font-weight:600}
+.readas{margin:0;font-size:15px;max-width:90ch}
+.readas b{font-weight:600}
+.readas .asm{color:var(--pressure);font-size:13px;display:block;margin-top:2px}
 
-.ws{display:grid;grid-template-columns:260px minmax(0,1fr) 320px;gap:14px;align-items:start}
-@media (max-width:1280px){.ws{grid-template-columns:240px minmax(0,1fr)}.right{grid-column:1/-1}}
-@media (max-width:820px){.ws{grid-template-columns:minmax(0,1fr)}}
-@media (min-width:1281px){.left,.right{max-height:760px;overflow-y:auto;position:sticky;top:70px}}
-body.motion .ws{grid-template-columns:minmax(0,1fr) 320px}
-body.motion .left,body.motion .deck{display:none}
-@media (max-width:1280px){body.motion .ws{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
-.panel-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 13px;border-bottom:1px solid var(--line)}
-.panel-h h2{font-size:14px}
-
-/* Left: Market World */
-.left details{border-bottom:1px solid var(--line)}
-.left details:last-child{border-bottom:0}
-.left summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:10px 13px;font-weight:600;font-size:13px}
-.left summary::-webkit-details-marker{display:none}
-.left summary .c{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-weight:400}
-.left summary::after{content:"+";color:var(--muted);margin-left:8px}
-.left details[open] summary::after{content:"–"}
-.lst{display:grid;gap:2px;padding:0 8px 10px}
-.li{display:grid;gap:2px;text-align:left;background:none;border:1px solid transparent;border-radius:7px;padding:7px 8px;width:100%}
-.li:hover{background:var(--surface-2)}
-.li.sel{border-color:var(--signal);background:var(--surface-2)}
-.li .r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.li b{font-weight:500;font-size:13px}
-.li small{font-size:11.5px;color:var(--muted)}
-.li .v{font-family:var(--f-mono);font-size:11.5px}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:0 13px 12px;font-size:12.5px}
-.kv dt{color:var(--muted)}.kv dd{margin:0}
-.slider-row{display:grid;gap:3px;padding:6px 8px}
-.slider-row input{width:100%;accent-color:var(--signal)}
-.edge-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;padding:4px 8px;font-size:12px;border-radius:6px}
-.edge-row:hover{background:var(--surface-2)}
-.adv-note{font-size:11.5px;color:var(--muted);padding:0 13px 10px}
-
-/* Stage */
+/* Results */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start}
+@media (max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{border:1px solid var(--line);border-radius:var(--r);background:var(--bg);min-width:0}
 .stage{position:relative;overflow:hidden}
-.stage-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.stage-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .crumbs{display:flex;gap:2px;flex-wrap:wrap;align-items:center;font-size:12.5px}
-.crumbs button{background:none;border:0;color:var(--soft);padding:2px 4px;border-radius:4px}
-.crumbs button:hover{color:var(--ink);background:var(--surface-2)}
+.crumbs button{background:none;border:0;color:var(--muted);padding:2px 4px;border-radius:4px}
+.crumbs button:hover{color:var(--ink);background:var(--tint)}
 .crumbs button[aria-current="true"]{color:var(--ink);font-weight:600}
 .crumbs span{color:var(--faint)}
-.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
-.seg button{background:none;border:0;padding:5px 10px;font-size:12.5px;color:var(--soft)}
-.seg button[aria-pressed="true"]{background:var(--surface-3);color:var(--ink)}
-.stage-body{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);height:540px;background:var(--bg-deep)}
-.stage-body.v-map{grid-template-columns:minmax(0,1fr)}.stage-body.v-map .net-wrap{display:none}
-.stage-body.v-net{grid-template-columns:minmax(0,1fr)}.stage-body.v-net .map-wrap{display:none}
-body.motion .stage-body{height:min(640px,72vh)}
-@media (max-width:820px){.stage-body{grid-template-columns:minmax(0,1fr);height:auto}.map-wrap,.net-wrap{height:360px}.stage-body.v-map .map-wrap,.stage-body.v-net .net-wrap{height:420px}}
+.seg{display:inline-flex;background:var(--tint);border-radius:9px;padding:3px}
+.seg button{background:none;border:0;padding:4px 11px;font-size:12.5px;color:var(--muted);border-radius:7px}
+.seg button[aria-pressed="true"]{background:var(--bg);color:var(--ink);box-shadow:0 1px 2px rgba(31,39,63,.12)}
+.stage-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);height:440px}
+.stage-body.v-map,.stage-body.v-net{grid-template-columns:minmax(0,1fr)}
+.stage-body.v-map .net-wrap,.stage-body.v-net .map-wrap{display:none}
+@media (max-width:700px){.stage-body{grid-template-columns:minmax(0,1fr);height:auto}.map-wrap,.net-wrap{height:320px}.stage-body.v-map .map-wrap,.stage-body.v-net .net-wrap{height:380px}}
 .map-wrap,.net-wrap{position:relative;min-width:0;overflow:hidden}
+.map-wrap{background:#FBFCFE}
 .net-wrap{border-left:1px solid var(--line)}
-@media (max-width:820px){.net-wrap{border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:700px){.net-wrap{border-left:0;border-top:1px solid var(--line)}}
 #map,#heat{position:absolute;inset:0;width:100%;height:100%}
 #heat{pointer-events:none}
-#map .cty{fill:#212A45;stroke:#33406A;stroke-width:.7;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .3s}
-#map .cty:hover{fill:#283255}
-#map .cty.reg{fill:#25304F}
-#map .cty.on{fill:#2A3560;stroke:var(--soft)}
-#map .cty.dim{fill:#1D2540}
-#map .rt{stroke:var(--line-2);stroke-width:1.2;vector-effect:non-scaling-stroke;stroke-dasharray:3 3;fill:none}
-#map .pl{fill:var(--soft);opacity:.75}
-#map .pl.far{opacity:.35}
-#map .nav{fill:transparent;stroke:var(--soft);stroke-width:1.2;vector-effect:non-scaling-stroke;cursor:pointer}
-#map .nav:hover{stroke:#fff;fill:rgba(166,191,229,.15)}
-#map .lbl{fill:var(--soft);font-family:var(--f-body);paint-order:stroke;stroke:#181F33;stroke-linejoin:round;pointer-events:none}
-#map .lbl.c{fill:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
-#map .rank{fill:var(--ink);font-family:var(--f-mono);font-weight:500;pointer-events:none;paint-order:stroke;stroke:#181F33}
-.map-legend{position:absolute;left:10px;bottom:10px;background:rgba(24,31,51,.88);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px;color:var(--soft);display:grid;gap:3px;pointer-events:none}
-.map-legend div{display:flex;align-items:center;gap:6px}
-.lg{width:9px;height:9px;border-radius:50%;display:inline-block}
-.map-title,.net-title{position:absolute;top:9px;left:11px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;pointer-events:none}
-.map-tip{position:absolute;pointer-events:none;background:var(--surface-3);border:1px solid var(--line-2);border-radius:6px;padding:4px 8px;font-size:12px;white-space:nowrap;transform:translate(-50%,-130%)}
+#map .cty{fill:#EEF3FB;stroke:#CCDDF1;stroke-width:.8;vector-effect:non-scaling-stroke;cursor:pointer}
+#map .cty:hover{fill:#E3EBF8}
+#map .cty.on{fill:#E3EBF8;stroke:#80AADC}
+#map .cty.dim{fill:#F4F7FB}
+#map .rt{stroke:#A8C6E8;stroke-width:1.2;vector-effect:non-scaling-stroke;stroke-dasharray:3 3;fill:none}
+#map .pl{fill:var(--ink);opacity:.55}
+#map .pl.far{opacity:.25}
+#map .nav{fill:rgba(255,255,255,.01);stroke:var(--blue);stroke-width:1.2;vector-effect:non-scaling-stroke;cursor:pointer}
+#map .nav:hover{fill:rgba(67,98,178,.12)}
+#map .lbl{fill:var(--ink);font-family:var(--f-body);paint-order:stroke;stroke:#fff;stroke-linejoin:round;pointer-events:none}
+#map .lbl.c{fill:var(--faint);font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+#map .rank{fill:#fff;font-family:var(--f-mono);font-weight:600;pointer-events:none}
+.pane-title{position:absolute;top:9px;left:12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:600;pointer-events:none}
+.legend{position:absolute;left:10px;bottom:10px;display:flex;gap:10px;font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.9);border-radius:6px;padding:3px 8px;pointer-events:none;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.simhere{position:absolute;right:10px;bottom:10px;z-index:3}
 #net{position:absolute;inset:0;width:100%;height:100%}
-#net .ed{fill:none;stroke:var(--line-2);stroke-width:1.2}
-#net .ed.on{stroke:#55669e}
+#net .ed{fill:none;stroke:#CCDDF1;stroke-width:1.2}
+#net .ed.on{stroke:#80AADC}
 #net .nd{cursor:pointer}
-#net .nd .body{fill:var(--surface);stroke:var(--line-2);stroke-width:1.2}
+#net .nd .body{fill:#fff;stroke:#CCDDF1;stroke-width:1.3}
 #net .nd.force .body{stroke-dasharray:3 2}
-#net .nd.out .body{fill:#2C3866;stroke:var(--soft)}
-#net .nd.sel .body{stroke:#fff;stroke-width:2}
-#net .nd:hover .body{stroke:var(--soft)}
-#net .nd.add{animation:ndin .7s ease-out both}
-@keyframes ndin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
-#net .nn{font-family:var(--f-display);font-size:11px;fill:var(--ink);font-weight:500;pointer-events:none}
-#net .nv{font-family:var(--f-mono);font-size:10px;fill:var(--soft);pointer-events:none}
+#net .nd.out .body{fill:var(--ink);stroke:var(--ink)}
+#net .nd.out .nv{fill:#fff}
+#net .nd.sel .body{stroke:var(--blue);stroke-width:2.2}
+#net .nd:hover .body{stroke:var(--blue-2)}
+#net .nn{font-family:var(--f-body);font-size:11px;fill:var(--ink);font-weight:500;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px}
+#net .nv{font-family:var(--f-mono);font-size:9.5px;fill:var(--muted);pointer-events:none}
 #net .ring{fill:none;stroke-width:3;stroke-linecap:round}
-#net .halo{fill:none;stroke:var(--signal);opacity:0}
-#net .mem{fill:var(--soft)}
-.net-legend{position:absolute;right:10px;top:9px;font-size:11px;color:var(--muted);display:grid;gap:2px;text-align:right;pointer-events:none}
+#net .halo{fill:none}
 
-.composer{border-top:1px solid var(--line);padding:9px 12px;display:grid;gap:7px}
-.comp-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.ev{border:1px dashed var(--line-2);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--soft);cursor:grab;user-select:none}
-.ev:hover{border-color:var(--soft);color:var(--ink)}
-.ev.act{border-style:solid;border-color:var(--signal);background:var(--signal-soft);color:var(--ink);cursor:default;display:inline-flex;gap:6px;align-items:center}
-.ev.act button{background:none;border:0;color:var(--soft);padding:0 2px;font-size:14px;line-height:1}
-.ev.act .src{font-size:10.5px;color:var(--muted)}
-.dropzone{position:absolute;inset:44px 0 0 0;border:2px dashed var(--soft);background:rgba(31,39,63,.55);display:grid;place-items:center;font-family:var(--f-display);font-size:18px;color:var(--ink);z-index:5;pointer-events:none}
-
-.build{position:absolute;inset:44px 0 0 0;z-index:6;display:grid;place-items:center;background:rgba(24,31,51,.55);pointer-events:none}
-.build-card{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:18px 20px;min-width:min(420px,90%);display:grid;gap:8px;box-shadow:0 20px 60px rgba(0,0,0,.35);pointer-events:auto}
+.build{position:absolute;inset:0;z-index:6;display:grid;place-items:center;background:rgba(255,255,255,.82)}
+.build-card{display:grid;gap:7px;min-width:min(380px,88%)}
 .build-card h3{font-size:16px}
-.bstep{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;font-size:13px;color:var(--faint);align-items:start}
-.bstep.on{color:var(--ink)}.bstep.done{color:var(--soft)}
-.bstep i{font-style:normal;font-family:var(--f-mono)}
-.bstep small{display:block;color:var(--muted);font-size:12px}
+.bstep{display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px;font-size:13px;color:var(--faint)}
+.bstep.on{color:var(--ink)}.bstep.done{color:var(--muted)}
+.bstep i{font-style:normal}
+.bstep small{display:block;color:var(--faint);font-size:12px}
 
-.replaybar{position:absolute;left:10px;right:10px;top:34px;z-index:4;background:rgba(24,31,51,.92);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px}
-.replaybar input{flex:1 1 140px;accent-color:var(--signal)}
+.player{display:flex;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.play{width:38px;height:38px;border-radius:50%;border:0;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:13px;flex:none}
+.play:hover{background:var(--blue)}
+.scrub{flex:1 1 260px;min-width:0;display:grid;gap:2px}
+.scrub input{width:100%;accent-color:var(--blue)}
+.ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
+.ticks span.on{color:var(--ink);font-weight:600}
+.steplbl{font-weight:600;font-size:13.5px;min-width:150px}
+.steplbl small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.stepnote{padding:0 14px 12px;font-size:13px;color:var(--muted);min-height:20px}
+.stepnote b{color:var(--ink);font-weight:500}
+.scenario{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-top:1px solid var(--line);background:var(--tint)}
+.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:3px 6px 3px 11px;font-size:12.5px}
+.chip button{background:none;border:0;color:var(--faint);font-size:15px;line-height:1;padding:0 4px}
+.chip button:hover{color:var(--ink)}
+.scenario select{border:1px dashed var(--line-2);background:var(--bg);border-radius:999px;padding:4px 10px;font-size:12.5px;color:var(--blue)}
 
-/* Right: What is happening */
-.right .sec{padding:11px 13px;border-bottom:1px solid var(--line);display:grid;gap:7px}
-.right .sec:last-child{border-bottom:0}
-.right h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;font-family:var(--f-body)}
-.feed{display:grid;gap:6px}
-.fi{display:grid;gap:2px;font-size:13px;background:none;border:0;text-align:left;padding:0}
-.fi .r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.fi small{color:var(--muted);font-size:12px}
-.fi:hover b{text-decoration:underline;text-underline-offset:2px}
-.fi b{font-weight:500}
-.life{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:4px;padding:1px 6px;border:1px solid currentColor;white-space:nowrap}
-.life.emerging{color:var(--soft)}.life.growing,.life.spreading{color:var(--signal-2)}.life.confirmed{color:#fff}.life.weakening{color:var(--faint)}.life.contested{color:var(--pressure)}.life.stable{color:var(--muted)}
-.st{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;white-space:nowrap}
-.st.Fact{background:#EEF3FB;color:#1F273F}.st.Inference{background:var(--signal);color:#fff}.st.Hypothesis{background:transparent;color:var(--pressure);border:1px solid var(--pressure)}.st.Assumption{background:transparent;color:var(--soft);border:1px dashed var(--soft)}.st.Unknown{background:transparent;color:var(--faint);border:1px dashed var(--faint)}
-.warn{font-size:12.5px;color:var(--pressure);display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px}
-.pattern{font-size:12.5px;display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px}
-.pattern i{font-style:normal;color:var(--signal-2)}
-.insp-h{display:flex;justify-content:space-between;align-items:start;gap:8px}
-.insp-h h3{font-family:var(--f-display);font-size:17px;letter-spacing:-.01em;text-transform:none;color:var(--ink)}
-.reason{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 10px;font-size:13px}
-.reason dt{color:var(--muted);font-size:12px}.reason dd{margin:0}
-.chain{list-style:none;margin:0;padding:0;display:grid;gap:0}
-.chain li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:8px;font-size:13px;padding:5px 0;position:relative}
-.chain li::before{content:"";position:absolute;left:7px;top:22px;bottom:-6px;width:1px;background:var(--line-2)}
+/* Side column */
+.leftcol{display:grid;gap:14px;min-width:0}
+.below{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:700px){.below{grid-template-columns:minmax(0,1fr)}}
+.side{display:grid;gap:14px;align-content:start}
+.blk{border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px}
+.blk h3{font-size:15px}
+.big{font-family:var(--f-display);font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.paths{display:grid;gap:4px}
+.prow{display:grid;grid-template-columns:22px minmax(0,1fr) 40px;gap:8px;align-items:center;background:none;border:1px solid transparent;border-radius:8px;padding:7px 8px;text-align:left;width:100%}
+.prow:hover{background:var(--tint)}
+.prow.sel{border-color:var(--line-2);background:var(--tint)}
+.prow .id{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.prow .t{font-size:13px;line-height:1.35}
+.prow .bar{grid-column:2/3;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prow .bar span{display:block;height:100%;background:var(--blue-2)}
+.prow .id{grid-column:1;grid-row:1}.prow .t{grid-column:2;grid-row:1}.prow .pct{grid-column:3;grid-row:1;font-family:var(--f-mono);font-size:12.5px;text-align:right}.prow .bar{grid-row:2}
+.detail{border:1.5px solid var(--blue-2);border-radius:var(--r);padding:14px 16px;display:grid;gap:9px;background:#FBFCFE}
+.detail-h{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.detail-h h3{font-size:16px}
+.x{border:1px solid var(--line);background:var(--bg);border-radius:7px;width:28px;height:28px;font-size:15px;line-height:1;flex:none}
+dl.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:0;font-size:13px}
+dl.kv dt{color:var(--muted)}dl.kv dd{margin:0}
+.st{font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.st.Fact{background:var(--ink);color:#fff}.st.Inference{background:var(--blue-soft);color:var(--blue)}.st.Hypothesis{background:var(--pressure-soft);color:var(--pressure)}.st.Assumption{border:1px dashed var(--muted);color:var(--muted)}.st.Unknown{border:1px dashed var(--faint);color:var(--faint)}
+.chain{list-style:none;margin:0;padding:0;display:grid}
+.chain li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:8px;font-size:13px;padding:4px 0;position:relative}
+.chain li::before{content:"";position:absolute;left:6px;top:19px;bottom:-5px;width:1px;background:var(--line-2)}
 .chain li:last-child::before{display:none}
-.chain li i{font-style:normal;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--soft);margin-top:3px}
+.chain li i{width:12px;height:12px;border-radius:50%;border:1.5px solid var(--blue-2);margin-top:4px;background:#fff}
 .chain li.src i{border-color:var(--pressure);background:var(--pressure-soft)}
 .chain small{display:block;color:var(--muted);font-size:12px}
-.props{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;font-size:12.5px;margin:0}
-.props dt{color:var(--muted)}.props dd{margin:0}
-.bars{display:grid;gap:6px}
-.bar{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:8px;align-items:center;font-size:12px}
-.bar .tr{grid-column:1/-1;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
-.bar .tr span{display:block;height:100%;background:var(--signal-2)}
-.spark{display:block}
-.chips{display:flex;flex-wrap:wrap;gap:4px}
-.chip{font-size:11.5px;border:1px solid var(--line-2);border-radius:999px;padding:1px 8px;color:var(--soft)}
-.back{background:none;border:0;color:var(--soft);font-size:12.5px;padding:0}
-.private{font-size:11.5px;color:var(--soft)}
+.prog{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:12.5px}
+.prog li{display:flex;gap:8px;color:var(--faint)}.prog li.done{color:var(--muted)}.prog li.now{color:var(--ink);font-weight:600}
+.finding{background:var(--blue-soft);border-radius:8px;padding:9px 11px;font-size:13px;display:grid;gap:2px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{border:1px solid var(--line-2);background:var(--bg);border-radius:999px;padding:5px 11px;font-size:12.5px}
+.opts button:hover{border-color:var(--blue)}
+.opts button.chosen{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rk{display:grid;grid-template-columns:18px minmax(0,1fr) 64px;gap:8px;align-items:center;padding:6px 8px;border-radius:7px;background:none;border:1px solid transparent;text-align:left;width:100%;font-size:13px}
+.rk:hover{background:var(--tint)}.rk.sel{border-color:var(--line-2);background:var(--tint)}
+.rk .n{font-family:var(--f-mono);color:var(--faint);font-size:12px}
+.rk .v{font-family:var(--f-mono);font-size:12.5px;text-align:right}
 
-/* Timeline */
-.timeline{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:11px 14px;display:grid;gap:9px}
-.tl-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.ctrls{display:flex;gap:4px}
-.ctrls button{width:34px;height:32px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface-2);display:grid;place-items:center;font-size:13px}
-.ctrls button.play{background:var(--ink);color:var(--bg);border-color:var(--ink);width:40px}
-.scrub{flex:1 1 300px;min-width:0;display:grid;gap:4px}
-.scrub input{width:100%;accent-color:var(--soft)}
-.ticks{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));font-size:11px;color:var(--muted)}
-.ticks span{text-align:center}.ticks span:first-child{text-align:left}.ticks span:last-child{text-align:right}
-.ticks span.on{color:var(--ink);font-weight:600}
-.phases{display:grid;grid-template-columns:1fr 1fr 1fr 2fr 2fr;gap:4px;font-size:11px;color:var(--faint)}
-.phases div{border-top:2px solid var(--line);padding-top:4px}
-.phases div.on{border-color:var(--soft);color:var(--ink)}
-.phases div.done{border-color:var(--signal);color:var(--soft)}
-.paths{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.pchip{border:1px solid var(--line-2);background:var(--surface-2);border-radius:999px;padding:3px 10px;font-size:12px;display:inline-flex;gap:6px;align-items:center}
-.pchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.pchip b{font-family:var(--f-mono);font-weight:500}
-.stepnow{font-family:var(--f-display);font-size:14px;font-weight:600;min-width:220px}
-.stepnow small{display:block;font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
-
-/* Deck */
-.deck{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 10px;overflow-x:auto}
-.tab{background:none;border:0;border-bottom:2px solid transparent;padding:12px 12px 10px;color:var(--muted);font-weight:500;white-space:nowrap}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--soft)}
-.tp{padding:18px}
-.sum{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:26px}
-@media (max-width:980px){.sum{grid-template-columns:minmax(0,1fr)}}
-.srow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding-block:11px;border-top:1px solid var(--line)}
-.srow:first-child{border-top:0;padding-top:0}
-@media (max-width:560px){.srow{grid-template-columns:minmax(0,1fr);gap:4px}}
-.srow p,.srow ul{margin:0}
-.srow ul{padding-left:17px;display:grid;gap:3px}
-.headline{font-family:var(--f-display);font-size:21px;font-weight:600;line-height:1.3}
-.outcome-card{background:var(--bg-deep);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px}
-.big{font-family:var(--f-display);font-size:34px;font-weight:700;letter-spacing:-.02em}
-.decide{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:16px;display:grid;gap:10px}
-.decide h3{font-size:16px}
-.decide p{margin:0;font-size:13px;color:#3a4566}
-.decide .opts{display:grid;gap:6px}
-.decide button{background:#fff;border:1px solid #C9D3E8;border-radius:8px;padding:9px 11px;text-align:left;color:#1F273F;font-weight:500;font-size:13px}
-.decide button:hover{border-color:#1F273F}
-.decide button.chosen{background:#1F273F;color:#fff;border-color:#1F273F}
-.decide textarea{background:#fff;border:1px solid #C9D3E8;border-radius:8px;color:#1F273F;padding:8px 10px;min-height:56px;resize:vertical;width:100%}
-.rank-list{display:grid;gap:4px}
-.rk{display:grid;grid-template-columns:24px minmax(0,1fr) 70px 90px;gap:10px;align-items:center;padding:7px 8px;border-radius:7px;background:none;border:1px solid transparent;text-align:left;width:100%;font-size:13px}
-.rk:hover{background:var(--surface-2)}.rk.sel{border-color:var(--soft)}
-.rk .n{font-family:var(--f-mono);color:var(--muted)}
-.rk .bar-s{height:5px;background:var(--line);border-radius:3px;overflow:hidden}.rk .bar-s span{display:block;height:100%;background:var(--signal-2)}
-.tree-wrap{overflow-x:auto}.tree-wrap svg{max-width:1080px;display:block}
-.tree text{font-family:var(--f-body);fill:var(--ink)}
-.tree .tn{fill:var(--surface-2);stroke:var(--line-2)}
-.tree .br{cursor:pointer}
-.tree .br:hover .tn,.tree .br.sel .tn{stroke:var(--ink)}
-.branches{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px}
-.bcard{border:1px solid var(--line);border-radius:var(--r);padding:13px;display:grid;gap:8px;align-content:start;background:var(--bg-deep)}
-.bcard.sel{border-color:var(--soft)}
-.bcard h4{font-size:14.5px;line-height:1.3}
-.bcard ul{margin:0;padding-left:16px;font-size:12.5px;display:grid;gap:2px}
-.pct{font-family:var(--f-display);font-size:24px;font-weight:700}
-.cmp-h{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
-.cmp-h select{background:var(--surface-2);border:1px solid var(--line-2);border-radius:7px;padding:6px 8px;max-width:240px}
-.mults{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.mult{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:grid;gap:6px;background:var(--bg-deep)}
-.mult h4{font-size:14px}
-.mult svg text{font-family:var(--f-mono);font-size:9.5px;fill:var(--muted)}
-.tbl{overflow-x:auto;margin-top:14px}
-table.ct{border-collapse:collapse;width:100%;min-width:560px;font-size:12.5px}
-table.ct th,table.ct td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-table.ct th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-table.ct td.n{font-family:var(--f-mono)}
-.gaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
-.gap{border:1px solid var(--line);border-radius:var(--r);padding:13px;display:grid;gap:8px;align-content:start;background:var(--bg-deep)}
-.gap h4{font-size:14.5px;line-height:1.35}
-.gap p{margin:0;font-size:13px}
-.gap>.btn,.bcard>.btn{justify-self:start}
-.swing{display:grid;gap:3px;font-size:12px;color:var(--muted)}
-.swing .tr{height:6px;background:var(--line);border-radius:3px;position:relative}
-.swing .tr span{position:absolute;top:0;bottom:0;background:var(--pressure);border-radius:3px}
-.prog{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:12.5px}
-.prog li{display:flex;gap:8px;color:var(--faint)}.prog li.done{color:var(--soft)}.prog li.now{color:var(--ink);font-weight:600}
-.prog li i{font-style:normal;width:12px;font-family:var(--f-mono)}
-.finding{background:var(--signal-soft);border:1px solid var(--signal);border-radius:8px;padding:9px 11px;font-size:13px;display:grid;gap:3px}
+/* More */
+.more{display:grid;gap:10px}
+.more details{border:1px solid var(--line);border-radius:var(--r)}
+.more summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-family:var(--f-display);font-weight:600;font-size:15px}
+.more summary::-webkit-details-marker{display:none}
+.more summary small{font-family:var(--f-body);font-weight:400;color:var(--muted);font-size:13px;margin-left:10px}
+.more summary::after{content:"+";color:var(--muted);font-size:18px;font-weight:400}
+.more details[open] summary::after{content:"–"}
+.more .in{padding:0 16px 16px;display:grid;gap:14px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+.list{display:grid}
+.li{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line);text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;font-size:13px}
+.li:first-child{border-top:0}
+.li .r1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.li small{color:var(--muted);font-size:12px}
+button.li:hover b{color:var(--blue)}
+.li b{font-weight:500}
+.mults{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mult{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:4px}
+.mult h4{font-size:13.5px}
+.mult .v{font-family:var(--f-display);font-size:22px;font-weight:700}
+.cmp-h{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cmp-h select{border:1px solid var(--line-2);border-radius:8px;padding:5px 8px;background:var(--bg);max-width:220px}
 .mem{list-style:none;margin:0;padding:0}
-.mem li{display:grid;grid-template-columns:64px 110px minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.mem li{display:grid;grid-template-columns:52px 110px minmax(0,1fr);gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
 .mem li:first-child{border-top:0}
-@media (max-width:560px){.mem li{grid-template-columns:56px minmax(0,1fr)}.mem li .k{grid-column:2}}
-.mem .t{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
-.mem .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--soft)}
-.intro{margin:0 0 14px;max-width:80ch;color:var(--soft);font-size:13.5px}
-.foot{font-size:12px;color:var(--faint);max-width:100ch}
-.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 15px;font-size:13px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.4);max-width:calc(100% - 32px)}
+@media (max-width:560px){.mem li{grid-template-columns:48px minmax(0,1fr)}.mem li .k{grid-column:2}}
+.mem .t{font-family:var(--f-mono);font-size:12px;color:var(--faint)}
+.mem .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--blue)}
+.foot{font-size:12px;color:var(--faint);max-width:100ch;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:9px;padding:9px 15px;font-size:13px;z-index:50;box-shadow:0 10px 30px rgba(31,39,63,.25);max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 
-<header class="top">
-  <div class="top-in">
-    <div class="brand"><b>Verisavo</b><span>Market Simulation · prototype</span></div>
-    <form class="mini-ask" id="miniAsk" hidden><input id="q2" aria-label="Ask Verisavo" autocomplete="off"><button class="btn" type="submit">Ask</button></form>
-    <div class="pulse" id="pulseBox" hidden title="Market Pulse: overall activity in the simulated market"><canvas id="pulse" width="192" height="48"></canvas><span id="pulseTxt">Calm</span></div>
-    <label class="tog" id="liveTog" hidden><input type="checkbox" id="live">Live signals</label>
-    <label class="tog" id="advTog" hidden><input type="checkbox" id="adv">Advanced</label>
-  </div>
-</header>
+<main class="page">
+  <header class="top"><b>Verisavo</b><span>Market Simulation</span></header>
 
-<section class="landing" id="landing">
-  <div class="land-in">
-    <div class="land-copy">
-      <span class="eyebrow">Ask Verisavo</span>
-      <h1>What do you want to understand?</h1>
-      <p>Ask any question about an African market. Verisavo builds the market world around it, brings the relevant signals to life and simulates how the market could respond.</p>
-      <form class="big-ask" id="ask"><input id="q" aria-label="Your market question" autocomplete="off" placeholder="What could happen if we reduce the price of our detergent by 15% in Kano?"><button class="btn primary" type="submit">Ask Verisavo</button></form>
-      <div class="ex" id="ex1"></div>
-      <button class="ex-more" id="exMore" type="button">More questions</button>
-      <div class="ex" id="ex2" hidden></div>
-      <span class="land-note">Prototype. Evidence, figures and sources are illustrative and used to demonstrate the experience.</span>
+  <section class="askzone" id="askzone">
+    <h1>What do you want to understand?</h1>
+    <p class="sub">Ask any question about an African market. Verisavo builds the market around it and shows how it could respond.</p>
+    <form class="ask" id="ask"><input id="q" aria-label="Your market question" autocomplete="off" placeholder="What could happen if we reduce the price of our detergent by 15% in Kano?"><button class="btn main" type="submit">Ask</button></form>
+    <div class="ex" id="ex"></div>
+  </section>
+
+  <section class="intro-map" id="intro">
+    <div class="how">
+      <span class="label">How it works</span>
+      <ol>
+        <li><b>Ask a question</b> about pricing, expansion, competitors, policy, supply or demand, anywhere in Africa.</li>
+        <li><b>Watch the market respond.</b> Signals appear on the map and market agents react to them and to each other.</li>
+        <li><b>See the possible outcomes</b>, what drives them, and what is still unknown before you decide.</li>
+      </ol>
+      <span class="muted" style="font-size:12.5px">Prototype. Evidence and figures are illustrative.</span>
     </div>
-    <svg class="land-map" id="landMap" viewBox="0 0 850 790" role="img" aria-label="Map of Africa with market signals pulsing in major cities"></svg>
-  </div>
-</section>
+    <svg id="introMap" viewBox="0 0 850 790" role="img" aria-label="Map of Africa with market signals in major cities"></svg>
+  </section>
 
-<main class="world" id="world" hidden>
-  <div class="ctxbar" id="ctx"></div>
-  <div class="ws">
-    <aside class="panel left" id="left" aria-label="Market World"></aside>
-    <section class="panel stage" id="stage">
-      <div class="stage-h">
+  <p class="readas" id="readas" hidden></p>
+
+  <div class="grid" id="results" hidden>
+   <div class="leftcol">
+    <section class="card stage">
+      <div class="stage-top">
         <nav class="crumbs" id="crumbs" aria-label="Geography"></nav>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <div class="seg" id="viewSeg"><button data-v="both" aria-pressed="true">Both</button><button data-v="map" aria-pressed="false">Heat map</button><button data-v="net" aria-pressed="false">Agents</button></div>
-          <button class="btn sm" id="motionBtn">Market Motion</button>
-        </div>
+        <div class="seg" id="viewSeg"><button data-v="both" aria-pressed="true">Both</button><button data-v="map" aria-pressed="false">Map</button><button data-v="net" aria-pressed="false">Agents</button></div>
       </div>
       <div class="stage-body" id="stageBody">
         <div class="map-wrap" id="mapWrap">
-          <svg id="map" preserveAspectRatio="none" aria-label="Market Signal Heat Map"><g id="gC"></g><g id="gR"></g><g id="gP"></g><g id="gN"></g><g id="gL"></g></svg>
+          <svg id="map" preserveAspectRatio="none" aria-label="Market signal map"><g id="gC"></g><g id="gR"></g><g id="gP"></g><g id="gN"></g><g id="gL"></g></svg>
           <canvas id="heat"></canvas>
-          <span class="map-title">Market Signal Heat Map</span>
-          <div class="map-legend"><div><span class="lg" style="background:var(--signal)"></span>Supportive movement</div><div><span class="lg" style="background:var(--pressure)"></span>Pressure building</div><div><span class="lg" style="background:transparent;border:1px dashed var(--soft)"></span>Faint or broken = low confidence</div></div>
-          <div class="map-tip" id="tip" hidden></div>
+          <span class="pane-title">Signals on the map</span>
+          <div class="legend"><span><i class="dot" style="background:var(--blue-2)"></i>Supportive</span><span><i class="dot" style="background:var(--pressure)"></i>Pressure</span></div>
+          <button class="btn sm simhere" id="simHere" hidden></button>
         </div>
         <div class="net-wrap" id="netWrap">
-          <svg id="net" viewBox="0 0 440 540" preserveAspectRatio="xMidYMid meet" aria-label="Market agents and relationships"><g id="nE"></g><g id="nP"></g><g id="nN"></g></svg>
-          <span class="net-title">Market agents</span>
-          <div class="net-legend"><span>○ actor · ▢ condition · ◌ external force</span><span>Ring = change · dots = memory</span></div>
+          <svg id="net" viewBox="0 0 440 440" preserveAspectRatio="xMidYMid meet" aria-label="Market agents"><g id="nE"></g><g id="nP"></g><g id="nN"></g></svg>
+          <span class="pane-title">Market agents · tap one to see why</span>
         </div>
       </div>
-      <div class="composer" id="composer">
-        <div class="comp-row"><span class="label">Scenario</span><span id="evActive" class="comp-row"></span></div>
-        <div class="comp-row" id="evPalette"><span class="label">Add an event</span></div>
+      <div class="player">
+        <button class="play" id="bPlay" aria-label="Play">▶</button>
+        <div class="steplbl" id="stepLbl"></div>
+        <div class="scrub"><input type="range" id="scrub" min="0" max="6" step="0.01" value="0" aria-label="Simulation time"><div class="ticks" id="ticks"></div></div>
+        <button class="btn sm" id="whyBtn">Why?</button>
       </div>
-      <div class="dropzone" id="drop" hidden>Drop to add this event to the market</div>
+      <div class="stepnote" id="stepNote"></div>
+      <div class="scenario" id="scenario"></div>
       <div class="build" id="build" hidden><div class="build-card" id="buildCard"></div></div>
     </section>
-    <aside class="panel right" id="right" aria-label="What is happening"></aside>
+    <div class="below" id="below"></div>
+   </div>
+    <aside class="side" id="side"></aside>
   </div>
 
-  <section class="timeline" aria-label="Simulation timeline">
-    <div class="tl-row">
-      <div class="ctrls"><button id="bRew" aria-label="Rewind to now">⏮</button><button id="bBack" aria-label="Step back">◀</button><button id="bPlay" class="play" aria-label="Play">▶</button><button id="bFwd" aria-label="Step forward">▶|</button></div>
-      <div class="stepnow" id="stepNow"></div>
-      <div class="scrub"><input type="range" id="scrub" min="0" max="6" step="0.01" value="0" aria-label="Simulation time"><div class="ticks" id="ticks"></div></div>
-      <button class="btn" id="whyBtn">Why did this happen?</button>
-    </div>
-    <div class="phases" id="phases"></div>
-    <div class="paths" id="pathChips"></div>
+  <section class="more" id="more" hidden>
+    <details id="dCmp"><summary><span>Compare options<small>Other strategies or locations, side by side</small></span></summary><div class="in" id="cmp"></div></details>
+    <details id="dEvi"><summary><span>Evidence and assumptions<small>Signals, sources and what is assumed</small></span></summary><div class="in" id="evi"></div></details>
+    <details id="dMem"><summary><span>Market Memory<small>What changed and when</small></span></summary><div class="in" id="mem"></div></details>
   </section>
 
-  <section class="deck" id="deck">
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-tab="summary" aria-selected="true">Simulation summary</button>
-      <button class="tab" role="tab" data-tab="futures" aria-selected="false">Branching futures</button>
-      <button class="tab" role="tab" data-tab="compare" aria-selected="false">Compare</button>
-      <button class="tab" role="tab" data-tab="investigate" aria-selected="false">Investigate</button>
-      <button class="tab" role="tab" data-tab="memory" aria-selected="false">Market Memory</button>
-    </div>
-    <div class="tp" id="tp-summary"></div>
-    <div class="tp" id="tp-futures" hidden></div>
-    <div class="tp" id="tp-compare" hidden></div>
-    <div class="tp" id="tp-investigate" hidden></div>
-    <div class="tp" id="tp-memory" hidden></div>
-  </section>
-  <p class="foot">Prototype. Signals, sources, location profiles and figures are illustrative. The rule-based question interpreter stands in for Verisavo’s production interpreter. Percentages are simulated index changes over the period, shown as plausible paths under stated assumptions. They are not forecasts, and the decision remains with you.</p>
+  <p class="foot" id="foot" hidden>Prototype. Signals, sources, location profiles and figures are illustrative. Percentages are simulated changes over the period across many runs. They show plausible outcomes under stated assumptions, not forecasts. The decision remains with you.</p>
 </main>
 <div class="toast" id="toast" hidden></div>
 <script>
@@ -1187,7 +1062,7 @@ const STEPS=6;
 function runOnce(W,seed,rec,evOverride){
   const r=mulberry32(seed),g=gaussOf(r),n=W.agents.length,evs=evOverride||W.events;
   const A={_prof:W.prof};W.assumptions.forEach(a=>{A[a.id]=a.kind==='actionP'?clamp(a.mean+g()*a.sd,0,1):a.kind==='edge'?Math.max(.1,a.mean+g()*a.sd):a.mean+g()*a.sd});
-  const sm=W.signals.map(s=>s.on?Math.max(0,1+g()*(1-s.conf)*1.1):0);
+  const sm=W.signals.map(s=>{const z=g();return s.on?Math.max(0,1+z*(1-s.conf)*1.1):0});
   const X=[new Float64Array(n)],M=new Float64Array(n),C=rec?[null]:null,dyn=[],acts=[],fired=new Set(),streak={};
   const wild=W.wild&&r()<W.wild.p?{t:2+Math.floor(r()*3)}:null;
   const I=W.idx;
@@ -1298,11 +1173,9 @@ function rankRun(spec,N=90){
 }
 if(typeof module!=='undefined')module.exports={rankRun,setCountries,understand,buildWorld,monteCarlo,runOnce,sensitivity,trace,addEvent,finalizeWorld,FEAT,CITY,DIST,STEPS,geoLabel};
 
-/* =====================================================================
-   Verisavo Universal Market Simulation — interface
-   ===================================================================== */
+/* Verisavo Market Simulation — simplified light interface */
 setCountries(AFRICA);
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const NS='http://www.w3.org/2000/svg';
 const h=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1312,49 +1185,37 @@ const arrow=v=>v>.004?'▲':v<-.004?'▼':'■';
 const adverse=(a,x)=>a.inv?x>0:x<0;
 const confWord=c=>c>=.72?'High':c>=.5?'Moderate':'Low';
 const clock=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-const STEP_NAMES=['Current market','Intervention','Initial reaction','Secondary reaction','Wider effects','Market response','Possible outcome'];
-const PHASES=[['Now',[0]],['Intervention',[1]],['Reaction',[2]],['Propagation',[3,4]],['Possible outcomes',[5,6]]];
-const EX1=['What happens if we lower our price?','Where should we expand next?','How could this policy affect our market?','What happens if this competitor enters?'];
-const EX2=['What could happen if we reduce the price of our detergent by 15% in Kano?','Which Nigerian state should we expand into next?','What could happen to food prices if fuel prices rise?','How could a new telecom regulation affect mobile operators in Kenya?','What happens if a major distributor stops serving this region?','How might consumers respond if we introduce a smaller pack?','Where is demand for solar installations likely to grow?','What could happen to retailers if this road becomes inaccessible?','How would competitors respond if we enter this market?','Should a bank expand agent banking into this community?','What might happen to demand if household purchasing power falls?','How could flooding affect agricultural distribution in this region?','What could happen if a competitor launches a cheaper product?','Which distribution strategy is more likely to work?','What happens to hotel bookings in Kigali if airline capacity falls?','How has the detergent market in Lagos changed over the last six months?'];
+const STEP_NAMES=['Today','Intervention','First reactions','Knock-on effects','Wider effects','Market response','Possible outcome'];
+const EXAMPLES=['What could happen if we reduce the price of our detergent by 15% in Kano?','Which Nigerian state should we expand into next?','What could happen to food prices if fuel prices rise?','How could a new telecom regulation affect mobile operators in Kenya?','What happens if a major distributor stops serving this region?','Should a bank expand agent banking into this community?','Where is demand for solar installations likely to grow?','What happens to hotel bookings in Kigali if airline capacity falls?'];
 
-const S={spec:null,W:null,mc:null,path:'A',tau:0,playing:false,view:'both',sel:null,live:false,adv:false,memory:[],decision:null,rank:null,rankSel:0,tab:'summary',nav:null,cam:null,camT:null,replay:null,liveBoost:0,cmp:null,cmpMode:'geo',sens:null,inv:{},open:new Set(['ctx','agents','signals']),reveal:{n:999,sig:1,edge:1},flash:[],lastStep:-1,busy:false,liveN:0,netKey:''};
+const S={spec:null,W:null,mc:null,path:'A',tau:0,playing:false,view:'both',detail:null,memory:[],decision:null,rank:null,rankSel:0,nav:null,cam:null,camT:null,reveal:{n:999,sig:1,edge:1},lastStep:-1,busy:false,netKey:'',inv:{},sens:null,cmpMode:'int',cmp:null,navTarget:null};
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600)}
+function remember(kind,text){S.memory.unshift({t:clock(),kind,text});if($('#dMem').open)renderMemory()}
 
-function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2800)}
-function remember(kind,text){S.memory.unshift({t:clock(),kind,text});if(S.tab==='memory')renderMemory()}
-
-/* ---------- Landing ---------- */
-function initLanding(){
+/* ---------- Intro ---------- */
+function initIntro(){
   const amb=Object.values(CITY).filter((c,i)=>i%2===0||c.o.capital);
-  $('#landMap').innerHTML=AFRICA.map(c=>`<path d="${c.d}"/>`).join('')+amb.map((c,i)=>`<circle class="amb" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="7" style="animation-delay:${((i*.61)%4.8).toFixed(2)}s"/><circle class="amb-core" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="1.8"/>`).join('');
-  $('#ex1').innerHTML=EX1.map(q=>`<button type="button" data-q="${h(q)}">${h(q)}</button>`).join('');
-  $('#ex2').innerHTML=EX2.map(q=>`<button type="button" data-q="${h(q)}">${h(q)}</button>`).join('');
-  $('#exMore').onclick=()=>{const e=$('#ex2');e.hidden=!e.hidden;$('#exMore').textContent=e.hidden?'More questions':'Fewer questions'};
-  document.addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(b){$('#q').value=b.dataset.q;ask(b.dataset.q)}});
-  $('#ask').addEventListener('submit',e=>{e.preventDefault();const q=$('#q').value.trim()||$('#q').placeholder;ask(q)});
-  $('#miniAsk').addEventListener('submit',e=>{e.preventDefault();const q=$('#q2').value.trim();if(q)ask(q)});
+  $('#introMap').innerHTML=AFRICA.map(c=>`<path d="${c.d}"/>`).join('')+amb.map((c,i)=>`<circle class="amb" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="7" style="animation-delay:${((i*.61)%4.8).toFixed(2)}s"/><circle class="amb-core" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2"/>`).join('');
+  $('#ex').innerHTML=EXAMPLES.slice(0,4).map(q=>`<button type="button" data-q="${h(q)}">${h(q)}</button>`).join('')+`<button type="button" class="linkbtn" id="moreEx" style="background:none;border:0">More examples</button>`;
+  $('#ask').addEventListener('submit',e=>{e.preventDefault();ask($('#q').value.trim()||$('#q').placeholder)});
 }
 
 /* ---------- Map ---------- */
-const MW={w:800,h:540};let hctx=null;
+const MW={w:600,h:440};let hctx=null;
 function initMap(){
-  const HC=$('#heat');hctx=HC.getContext('2d');
-  $('#gC').innerHTML=AFRICA.map(c=>`<path class="cty" data-id="${c.id}" d="${c.d}"></path>`).join('');
-  const ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(sizeMap):null;if(ro)ro.observe($('#mapWrap'));
-  const rn=typeof ResizeObserver!=='undefined'?new ResizeObserver(()=>{if(!S.W)return;const r=$('#netWrap').getBoundingClientRect();if(S.netSize&&Math.abs(r.width-S.netSize[0])<4&&Math.abs(r.height-S.netSize[1])<4)return;S.netKey='';buildNet()}):null;if(rn)rn.observe($('#netWrap'));window.addEventListener('resize',sizeMap);
-  const map=$('#map');
-  map.addEventListener('click',e=>{
-    const n=e.target.closest('[data-geo]');if(n){const g=JSON.parse(n.dataset.geo);navTo(g);openPlace(g);return}
-    const c=e.target.closest('.cty');if(c){const id=c.dataset.id;if(id==='732')return;navTo(mkGeo('country',{cid:id}));openPlace(mkGeo('country',{cid:id}))}
-  });
-  map.addEventListener('mousemove',e=>{const tip=$('#tip');const c=e.target.closest('.cty,[data-geo]');if(!c){tip.hidden=true;return}
-    const r=$('#mapWrap').getBoundingClientRect();tip.style.left=(e.clientX-r.left)+'px';tip.style.top=(e.clientY-r.top)+'px';
-    if(c.dataset.geo){tip.textContent=c.dataset.name}else{const k=CTRY[c.dataset.id];const p=profileOf(mkGeo('country',{cid:c.dataset.id}));tip.textContent=`${k.name} · evidence ${p.evidence.toFixed(2)}${FEAT[c.dataset.id]?'':' (limited)'}`}tip.hidden=false});
-  map.addEventListener('mouseleave',()=>$('#tip').hidden=true);
+  hctx=$('#heat').getContext('2d');
+  $('#gC').innerHTML=AFRICA.map(c=>`<path class="cty" data-id="${c.id}" d="${c.d}"><title>${h(c.name)}</title></path>`).join('');
+  if(typeof ResizeObserver!=='undefined'){new ResizeObserver(sizeMap).observe($('#mapWrap'));new ResizeObserver(()=>{if(!S.W)return;const r=$('#netWrap').getBoundingClientRect();if(S.netSize&&Math.abs(r.width-S.netSize[0])<4&&Math.abs(r.height-S.netSize[1])<4)return;S.netKey='';buildNet()}).observe($('#netWrap'))}
+  window.addEventListener('resize',sizeMap);
+  $('#map').addEventListener('click',e=>{
+    const n=e.target.closest('[data-geo]');if(n){const g=JSON.parse(n.dataset.geo);navTo(g);offerSim(g);return}
+    const c=e.target.closest('.cty');if(c&&c.dataset.id!=='732'){const g=mkGeo('country',{cid:c.dataset.id});navTo(g);offerSim(g)}});
 }
-function sizeMap(){const r=$('#mapWrap').getBoundingClientRect();if(r.width<10)return;MW.w=r.width;MW.h=r.height;const d=window.devicePixelRatio||1;const HC=$('#heat');HC.width=Math.round(MW.w*d);HC.height=Math.round(MW.h*d);hctx.setTransform(d,0,0,d,0,0);if(S.cam){S.cam=fixAspect(S.cam);if(S.camT)S.camT.to=fixAspect(S.camT.to)}applyCam()}
+function offerSim(g){const b=$('#simHere');if(S.W&&JSON.stringify(g)===JSON.stringify(S.W.geo)){b.hidden=true;return}S.navTarget=g;b.textContent=`Simulate in ${geoShort(g)}`;b.hidden=false}
+function sizeMap(){const r=$('#mapWrap').getBoundingClientRect();if(r.width<10)return;MW.w=r.width;MW.h=r.height;const d=window.devicePixelRatio||1;const HC=$('#heat');HC.width=Math.round(MW.w*d);HC.height=Math.round(MW.h*d);if(S.cam){S.cam=fixAspect(S.cam);if(S.camT)S.camT.to=fixAspect(S.camT.to)}applyCam()}
 function fixAspect(c){const a=MW.w/MW.h,cx=c.x+c.w/2,cy=c.y+c.h/2;let w=c.w,hh=c.h;if(w/hh<a)w=hh*a;else hh=w/a;return {x:cx-w/2,y:cy-hh/2,w,h:hh}}
 function fitBB(bb,pad=.1){const bw=Math.max(bb[2]-bb[0],3),bh=Math.max(bb[3]-bb[1],3);return fixAspect({x:bb[0]-bw*pad,y:bb[1]-bh*pad,w:bw*(1+2*pad),h:bh*(1+2*pad)})}
-function flyTo(bb){const to=fitBB(bb);if(!S.cam||RM){S.cam=to;S.camT=null;applyCam();return}S.camT={from:{...S.cam},to,t0:performance.now(),d:1000}}
+function flyTo(bb){const to=fitBB(bb);if(!S.cam||RM){S.cam=to;S.camT=null;applyCam();return}S.camT={from:{...S.cam},to,t0:performance.now(),d:900}}
 function applyCam(){if(!S.cam)return;const c=S.cam;$('#map').setAttribute('viewBox',`${c.x} ${c.y} ${c.w} ${c.h}`);scaleMarks()}
 const U=()=>S.cam?S.cam.w/MW.w:1;
 function scaleMarks(){const u=U();$$('#map [data-r]').forEach(e=>e.setAttribute('r',(e.dataset.r*u).toFixed(3)));$$('#map [data-fs]').forEach(e=>{e.setAttribute('font-size',(e.dataset.fs*u).toFixed(3));e.setAttribute('stroke-width',(3*u).toFixed(3));e.setAttribute('y',(+e.dataset.y+(+e.dataset.dy||0)*u).toFixed(3))})}
@@ -1362,598 +1223,294 @@ function bbFor(g){
   if(g.level==='africa')return [0,0,850,790];
   if(g.level==='region'){const bs=REG[g.region].map(c=>CTRY[c]&&CTRY[c].bb).filter(Boolean);return [Math.min(...bs.map(b=>b[0])),Math.min(...bs.map(b=>b[1])),Math.max(...bs.map(b=>b[2])),Math.max(...bs.map(b=>b[3]))]}
   if(g.level==='country')return CTRY[g.cid].bb;
-  if(g.level==='city'){const c=CITY[g.city];const pts=[[c.x,c.y],...c.ds.map(d=>[DIST[d].x,DIST[d].y])];const x0=Math.min(...pts.map(p=>p[0])),x1=Math.max(...pts.map(p=>p[0])),y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));const cx=(x0+x1)/2,cy=(y0+y1)/2,s=Math.max(x1-x0,y1-y0,4.5)/2+1.2;return [cx-s,cy-s,cx+s,cy+s]}
+  if(g.level==='city'){const c=CITY[g.city];const pts=[[c.x,c.y],...c.ds.map(d=>[DIST[d].x,DIST[d].y])];const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2,s=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys),4.5)/2+1.2;return [cx-s,cy-s,cx+s,cy+s]}
   const d=DIST[g.district];return [d.x-1.6,d.y-1.6,d.x+1.6,d.y+1.6];
 }
-function geoPos(g){if(g.level==='district')return [DIST[g.district].x,DIST[g.district].y];if(g.level==='city')return [CITY[g.city].x,CITY[g.city].y];if(g.level==='country'){const k=CTRY[g.cid];return FEAT[g.cid]?[CITY[FEAT[g.cid].cityIds[0]].x,CITY[FEAT[g.cid].cityIds[0]].y]:k.c}return [425,395]}
+function geoPos(g){if(g.level==='district')return [DIST[g.district].x,DIST[g.district].y];if(g.level==='city')return [CITY[g.city].x,CITY[g.city].y];if(g.level==='country'){return FEAT[g.cid]?[CITY[FEAT[g.cid].cityIds[0]].x,CITY[FEAT[g.cid].cityIds[0]].y]:CTRY[g.cid].c}return [425,395]}
 function navTo(g){S.nav=g;flyTo(bbFor(g));renderMapLayers();renderCrumbs()}
-function navChildren(g){
-  if(g.level==='country'&&FEAT[g.cid])return FEAT[g.cid].cityIds.map(id=>mkGeo('city',{city:id}));
-  if(g.level==='city'||g.level==='district'){const c=CITY[g.city];return c.ds.map(d=>mkGeo('district',{district:d}))}
-  if(g.level==='region')return REG[g.region].filter(c=>FEAT[c]).map(cid=>mkGeo('country',{cid}));
-  return [];
-}
+function navChildren(g){if(g.level==='country'&&FEAT[g.cid])return FEAT[g.cid].cityIds.map(id=>mkGeo('city',{city:id}));if(g.level==='city'||g.level==='district')return CITY[g.city].ds.map(d=>mkGeo('district',{district:d}));if(g.level==='region')return REG[g.region].filter(c=>FEAT[c]).map(cid=>mkGeo('country',{cid}));return []}
 function renderMapLayers(){
   if(!S.nav)return;const nav=S.nav,W=S.W;
-  $$('#gC .cty').forEach(p=>{const id=p.dataset.id,inReg=(nav.region&&REG[nav.region]&&REG[nav.region].includes(id));p.classList.toggle('reg',nav.level==='region'&&inReg);p.classList.toggle('on',nav.cid===id&&nav.level!=='africa'&&nav.level!=='region');p.classList.toggle('dim',(nav.level==='country'||nav.level==='city'||nav.level==='district')&&nav.cid!==id)});
+  $$('#gC .cty').forEach(p=>{const id=p.dataset.id;p.classList.toggle('on',nav.cid===id&&!['africa','region'].includes(nav.level));p.classList.toggle('dim',['country','city','district'].includes(nav.level)&&nav.cid!==id)});
   let r='',pl='',nv='',lb='';
   const lab=(x,y,t,cls,fs=11,dy=-9)=>`<text class="lbl ${cls||''}" x="${x}" y="${y}" data-y="${y}" data-dy="${dy}" data-fs="${fs}" text-anchor="middle">${h(t)}</text>`;
   if(W){const P=W.placeIdx;W.routes.forEach(([a,b])=>{const A=P[a],B=P[b];if(A&&B)r+=`<line class="rt" x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}"/>`});
-    W.places.filter(p=>!p.tags.includes('route')).forEach(p=>{pl+=`<circle class="pl ${p.tags.includes('far')?'far':''}" cx="${p.x}" cy="${p.y}" data-r="${p.tags.includes('hub')?3.4:2.4}"/>`;
-      const showLbl=(nav.level==='city'||nav.level==='district')?!p.tags.includes('far')||true:nav.level==='country'?p.tags.includes('city'):false;
-      if(showLbl&&!p.tags.includes('rural'))lb+=lab(p.x,p.y,p.name.replace(/ hub$/,''),'',p.tags.includes('far')?10:11)})}
-  const kids=navChildren(nav);
-  kids.forEach(g=>{const [x,y]=geoPos(g);const nm=geoShort(g);nv+=`<circle class="nav" cx="${x}" cy="${y}" data-r="8" data-geo='${JSON.stringify(g)}' data-name="${h(nm)}"><title>${h(nm)}</title></circle>`;if(!(W&&W.places.some(p=>Math.abs(p.x-x)<.01&&Math.abs(p.y-y)<.01)))lb+=lab(x,y,nm,'',10.5,-12)});
-  if(nav.level==='africa'||nav.level==='region'){Object.keys(FEAT).forEach(cid=>{if(nav.level==='region'&&regionOf(cid)!==nav.region)return;const k=CTRY[cid];lb+=lab(k.c[0],k.c[1],k.name,'c',9.5,0)})}
-  if(nav.level==='country')lb+=lab(CTRY[nav.cid].c[0],CTRY[nav.cid].bb[1]+6,CTRY[nav.cid].name,'c',10,0);
-  if(S.rank){S.rank.forEach((c,i)=>{const [x,y]=geoPos(c.geo);lb+=`<text class="rank" x="${x}" y="${y}" data-y="${y}" data-dy="4" data-fs="11" text-anchor="middle">${i+1}</text>`})}
+    W.places.filter(p=>!p.tags.includes('route')).forEach(p=>{pl+=`<circle class="pl ${p.tags.includes('far')?'far':''}" cx="${p.x}" cy="${p.y}" data-r="2.6"/>`;
+      const show=['city','district'].includes(nav.level)||(nav.level==='country'&&p.tags.includes('city'));if(show&&!p.tags.includes('rural'))lb+=lab(p.x,p.y,p.name.replace(/ hub$/,''),'',p.tags.includes('far')?10:11)})}
+  navChildren(nav).forEach(g=>{const [x,y]=geoPos(g),nm=geoShort(g);nv+=`<circle class="nav" cx="${x}" cy="${y}" data-r="8" data-geo='${JSON.stringify(g)}'><title>${h(nm)}</title></circle>`;if(!(W&&W.places.some(p=>Math.abs(p.x-x)<.01&&Math.abs(p.y-y)<.01)))lb+=lab(x,y,nm,'',10.5,-12)});
+  if(['africa','region'].includes(nav.level))Object.keys(FEAT).forEach(cid=>{if(nav.level==='region'&&regionOf(cid)!==nav.region)return;const k=CTRY[cid];lb+=lab(k.c[0],k.c[1],k.name,'c',9.5,0)});
+  if(S.rank)S.rank.forEach((c,i)=>{const [x,y]=geoPos(c.geo);lb+=`<text class="rank" x="${x}" y="${y}" data-y="${y}" data-dy="4" data-fs="10.5" text-anchor="middle" style="stroke:none">${i+1}</text>`});
   $('#gR').innerHTML=r;$('#gP').innerHTML=pl;$('#gN').innerHTML=nv;$('#gL').innerHTML=lb;scaleMarks();
 }
-function renderCrumbs(){const cr=geoCrumbs(S.nav);$('#crumbs').innerHTML=cr.map((c,i)=>{const last=i===cr.length-1;return (i?'<span>›</span>':'')+(c.stateOnly?`<span style="color:var(--muted)">${h(c.label)}</span>`:`<button data-crumb='${JSON.stringify({level:c.level,region:c.region,cid:c.cid,city:c.city,district:c.district})}' aria-current="${last}">${h(c.label)}</button>`)}).join('');}
+function renderCrumbs(){const cr=geoCrumbs(S.nav).filter(c=>!c.stateOnly);$('#crumbs').innerHTML=cr.map((c,i)=>(i?'<span>›</span>':'')+`<button data-crumb='${JSON.stringify({level:c.level,region:c.region,cid:c.cid,city:c.city,district:c.district})}' aria-current="${i===cr.length-1}">${h(c.label)}</button>`).join('')}
 
-/* heat drawing */
-const C_SIG='97,141,208',C_SOFT='166,191,229',C_PR='227,176,92',C_W='244,244,244';
-function blob(x,y,r,a,col){if(a<=.005||r<=.5)return;const g=hctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${col},${Math.min(1,a)})`);g.addColorStop(.55,`rgba(${col},${Math.min(1,a)*.35})`);g.addColorStop(1,`rgba(${col},0)`);hctx.fillStyle=g;hctx.beginPath();hctx.arc(x,y,r,0,6.2832);hctx.fill()}
+/* heat on a light ground */
+const C_SUP='97,140,208',C_PR='194,123,20',C_INK='31,39,63';
+function blob(x,y,r,a,col){if(a<=.005||r<=.5)return;const g=hctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${col},${Math.min(.85,a)})`);g.addColorStop(.5,`rgba(${col},${Math.min(.85,a)*.35})`);g.addColorStop(1,`rgba(${col},0)`);hctx.fillStyle=g;hctx.beginPath();hctx.arc(x,y,r,0,6.2832);hctx.fill()}
 function ring(x,y,r,a,col,w=1.4){if(a<=.01)return;hctx.strokeStyle=`rgba(${col},${Math.min(1,a)})`;hctx.lineWidth=w;hctx.beginPath();hctx.arc(x,y,r,0,6.2832);hctx.stroke()}
-function glow(x,y,I,conf,mode,col,seed,T,scale=1){
-  I=Math.min(1.2,I);const r=(9+30*I)*scale;let a=.22+.6*Math.min(1,I);
-  if(mode==='weakening')a*=.45;
-  if(mode==='contested'||mode==='collide'){const ph=Math.sin(T*2.6+seed);blob(x-r*.28,y,r*.8,a*(.55+.4*ph),mode==='collide'?C_SIG:col);blob(x+r*.28,y,r*.8,a*(.55-.4*ph),C_PR);return}
-  if(conf<.55){for(let k=0;k<4;k++){const an=seed*7+k*1.57+T*.25,d=r*.38*(1+.35*Math.sin(T*1.2+k));blob(x+Math.cos(an)*d,y+Math.sin(an)*d,r*.5,a*.55*(.65+.35*Math.sin(T*1.8+k+seed)),col)}}
-  else blob(x,y,r,a,col);
-  if(conf>=.72)blob(x,y,Math.max(3,r*.2),Math.min(.85,a+.15),C_W);
-  if(mode==='emerging'){const p=((T*.55+seed)%1);ring(x,y,5+p*r*1.3,(1-p)*.75,col)}
-  else if(mode==='growing'){const p=(Math.sin(T*2+seed)+1)/2;blob(x,y,r*(1.1+.3*p),a*.25,col)}
-  else if(mode==='spreading'){for(let k=0;k<2;k++){const p=((T*.42+seed+k*.5)%1);ring(x,y,r*.5+p*r*2.4,(1-p)*.5,col,1.2)}}
-  else if(mode==='confirmed')ring(x,y,r*.85,.35,C_W,1);
+function glow(x,y,I,conf,mode,col,seed,T){
+  I=Math.min(1.2,I);const r=8+26*I;let a=.18+.5*Math.min(1,I);if(mode==='weakening')a*=.45;
+  if(mode==='contested'||mode==='collide'){const ph=Math.sin(T*2.4+seed);blob(x-r*.28,y,r*.8,a*(.55+.35*ph),C_SUP);blob(x+r*.28,y,r*.8,a*(.55-.35*ph),C_PR);return}
+  if(conf<.55){for(let k=0;k<4;k++){const an=seed*7+k*1.57+T*.25,d=r*.38;blob(x+Math.cos(an)*d,y+Math.sin(an)*d,r*.5,a*.55,col)}}else blob(x,y,r,a,col);
+  if(conf>=.72){hctx.fillStyle=`rgba(${col},.9)`;hctx.beginPath();hctx.arc(x,y,2.6,0,6.2832);hctx.fill()}
+  if(mode==='emerging'){const p=((T*.5+seed)%1);ring(x,y,4+p*r*1.2,(1-p)*.6,col)}
+  else if(mode==='spreading'){for(let k=0;k<2;k++){const p=((T*.4+seed+k*.5)%1);ring(x,y,r*.5+p*r*2,(1-p)*.4,col,1.1)}}
 }
-function curPath(){if(!S.mc)return null;return S.mc.paths.find(p=>p.id===S.path)||S.mc.paths[0]}
+function curPath(){return S.mc?(S.mc.paths.find(p=>p.id===S.path)||S.mc.paths[0]):null}
 function curRep(){const p=curPath();return p?p.rep:null}
 function xAt(rep,i,tau){const t0=Math.floor(tau),t1=Math.min(STEPS,t0+1),f=tau-t0;return rep.X[t0][i]*(1-f)+rep.X[t1][i]*f}
 function minDist(W,p){let d=1e9;W.origin.forEach(id=>{const o=W.placeIdx[id];if(o)d=Math.min(d,Math.hypot(o.x-p.x,o.y-p.y))});return d===1e9?0:d}
 function extent(W){if(W._ext)return W._ext;let m=1;W.places.forEach(p=>{if(!p.tags.includes('far'))m=Math.max(m,minDist(W,p))});return W._ext=m}
-function spatial(W,p,tau){if(tau<=.02)return 0;const d=minDist(W,p)/extent(W);return Math.exp(-d/(.06+.24*Math.max(0,tau-.4)))}
+function spatial(W,p,tau){if(tau<=.02)return 0;return Math.exp(-(minDist(W,p)/extent(W))/(.06+.24*Math.max(0,tau-.4)))}
 function drawHeat(T){
-  if(!hctx)return;hctx.setTransform(window.devicePixelRatio||1,0,0,window.devicePixelRatio||1,0,0);hctx.clearRect(0,0,MW.w,MW.h);
+  const d=window.devicePixelRatio||1;hctx.setTransform(d,0,0,d,0,0);hctx.clearRect(0,0,MW.w,MW.h);
   const W=S.W;if(!W||!S.cam)return;
   const toS=(x,y)=>[(x-S.cam.x)/S.cam.w*MW.w,(y-S.cam.y)/S.cam.h*MW.h];
-  const zoomScale=Math.max(.7,Math.min(1.4,Math.sqrt(MW.w/600)));
-  hctx.globalCompositeOperation='lighter';
-  const rep=curRep(),tau=S.replay?0:S.tau,P=W.placeIdx;
-  // ranking candidates
-  if(S.rank&&!S.replay){const mn=Math.min(...S.rank.map(r=>r.mean)),mx=Math.max(...S.rank.map(r=>r.mean));S.rank.forEach((c,i)=>{const [x,y]=toS(...geoPos(c.geo));const I=.25+.75*((c.mean-mn)/((mx-mn)||1));glow(x,y,I*.9,c.ev,i===S.rankSel?'confirmed':'stable',C_SIG,i*.37,T,zoomScale*.9)})}
-  // agent effects spreading across places
+  const rep=curRep(),tau=S.tau,P=W.placeIdx;
+  hctx.globalCompositeOperation='source-over';
+  if(S.rank){const mn=Math.min(...S.rank.map(r=>r.mean)),mx=Math.max(...S.rank.map(r=>r.mean));S.rank.forEach((c,i)=>{const [x,y]=toS(...geoPos(c.geo));const I=.3+.7*((c.mean-mn)/((mx-mn)||1));blob(x,y,10+22*I,.25+.4*I,C_SUP);hctx.fillStyle=`rgba(${C_INK},${i===S.rankSel?1:.75})`;hctx.beginPath();hctx.arc(x,y,8,0,6.2832);hctx.fill()})}
   if(rep&&tau>0&&S.reveal.sig){
     const acc={};
-    W.agents.forEach((a,i)=>{const x=xAt(rep,i,tau);if(Math.abs(x)<.02)return;const adv=adverse(a,x);a.places.forEach(pid=>{const p=P[pid];if(!p||p.tags.includes('route'))return;const I=Math.abs(x)*spatial(W,p,tau);const o=acc[pid]=acc[pid]||{pr:0,sp:0,rise:0};if(adv)o.pr+=I;else o.sp+=I;
-      const xp=xAt(rep,i,Math.max(0,tau-.25));o.rise+=Math.abs(x)*spatial(W,p,tau)-Math.abs(xp)*spatial(W,p,Math.max(0,tau-.25))})});
+    W.agents.forEach((a,i)=>{const x=xAt(rep,i,tau);if(Math.abs(x)<.02)return;const adv=adverse(a,x);a.places.forEach(pid=>{const p=P[pid];if(!p||p.tags.includes('route'))return;const I=Math.abs(x)*spatial(W,p,tau);const o=acc[pid]=acc[pid]||{pr:0,sp:0};if(adv)o.pr+=I;else o.sp+=I})});
     Object.entries(acc).forEach(([pid,o],k)=>{const p=P[pid];const [x,y]=toS(p.x,p.y);const pr=Math.min(1,o.pr*.8),sp=Math.min(1,o.sp*.8);
-      if(pr>.06&&sp>.06)glow(x,y,Math.max(pr,sp),W.prof.evidence,'collide',C_SIG,k,T,zoomScale);
-      else if(pr>.02||sp>.02)glow(x,y,Math.max(pr,sp),W.prof.evidence,o.rise>.004?'spreading':'growing',pr>sp?C_PR:C_SIG,k*.31,T,zoomScale)});
-    // corridor flow
+      if(pr>.06&&sp>.06)glow(x,y,Math.max(pr,sp),W.prof.evidence,'collide',C_SUP,k,T);else if(pr>.02||sp>.02)glow(x,y,Math.max(pr,sp),W.prof.evidence,'spreading',pr>sp?C_PR:C_SUP,k*.31,T)});
     W.places.filter(p=>p.tags.includes('route')).forEach((rp,k)=>{let act=0,adv=false;W.agents.forEach((a,i)=>{if(ROLES[a.id].pl!=='routes')return;const x=xAt(rep,i,tau);const v=Math.abs(x)*spatial(W,rp,tau);if(v>act){act=v;adv=adverse(a,x)}});
-      if(act<.03)return;const A=P[rp.route[0]],B=P[rp.route[1]];if(!A||!B)return;const n=Math.min(6,1+Math.floor(act*9));
-      for(let j=0;j<n;j++){const s=((T*(.12+act*.45))+j/n+k*.13)%1;const [x,y]=toS(A.x+(B.x-A.x)*s,A.y+(B.y-A.y)*s);blob(x,y,3.4,.85,adv?C_PR:C_SIG)}});
+      if(act<.03)return;const A=P[rp.route[0]],B=P[rp.route[1]];if(!A||!B)return;const n=Math.min(5,1+Math.floor(act*8));
+      for(let j=0;j<n;j++){const s=((T*(.12+act*.4))+j/n+k*.13)%1;const [x,y]=toS(A.x+(B.x-A.x)*s,A.y+(B.y-A.y)*s);hctx.fillStyle=`rgba(${adv?C_PR:C_SUP},.85)`;hctx.beginPath();hctx.arc(x,y,2.6,0,6.2832);hctx.fill()}});
   }
-  // signals
-  if(S.reveal.sig){
-    const m=S.replay?S.replay.m:null;
-    W.signals.forEach((s,k)=>{if(!s.on)return;let I,mode=s.life;
-      if(m!=null){const i0=Math.floor(m),i1=Math.min(5,i0+1),f=m-i0;I=(s.hist[i0]*(1-f)+s.hist[i1]*f);if(I<.02)return;const prev=s.hist[Math.max(0,i0-1)];mode=prev<.02?'emerging':s.hist[i1]>s.hist[i0]+.02?'growing':s.hist[i1]<s.hist[i0]-.02?'weakening':s.life==='contested'?'contested':'confirmed'}
-      else I=s.strength*lifeF(s,Math.max(1,tau))*.85;
-      const a=W.agents[s.tg[0][0]],col=adverse(a,s.tg[0][1])?C_PR:C_SIG;
-      s.places.forEach((pid,j)=>{const p=P[pid];if(!p)return;const [x,y]=toS(p.x+(j%2?.15:-.15)*U()*8,p.y-.2*U()*8);glow(x,y,I*.75,s.conf,mode,col,k*.53+j,T,zoomScale*.8)})});
-  }
-  // live flashes
-  const now=performance.now();S.flash=S.flash.filter(f=>now-f.t0<2600);S.flash.forEach(f=>{const p=P[f.pid];if(!p)return;const [x,y]=toS(p.x,p.y);const k=(now-f.t0)/2600;ring(x,y,6+k*60,(1-k)*.9,C_W,2);blob(x,y,18,(1-k)*.7,C_SOFT)});
+  if(S.reveal.sig)W.signals.forEach((s,k)=>{if(!s.on)return;const I=s.strength*lifeF(s,Math.max(1,tau))*.7;const a=W.agents[s.tg[0][0]],col=adverse(a,s.tg[0][1])?C_PR:C_SUP;
+    s.places.forEach((pid,j)=>{const p=P[pid];if(!p)return;const [x,y]=toS(p.x,p.y);glow(x+(j%2?6:-6),y-4,I,s.conf,s.life,col,k*.53+j,T)})});
   hctx.globalCompositeOperation='source-over';
 }
 
-/* ---------- Network ---------- */
+/* ---------- Agents network ---------- */
 let NP=[];
-function nodeR(a){return a.k==='condition'?20:20}
 function netLayout(W){
-  const r=$('#netWrap').getBoundingClientRect();const w=Math.max(300,r.width||440),hh=Math.max(320,r.height||540);$('#net').setAttribute('viewBox',`0 0 ${w} ${hh}`);
+  const r=$('#netWrap').getBoundingClientRect(),w=Math.max(280,r.width||440),hh=Math.max(300,r.height||440);$('#net').setAttribute('viewBox',`0 0 ${w} ${hh}`);
   const others=W.agents.map((a,i)=>({a,i})).filter(o=>o.i!==W.out).sort((p,q)=>p.a.col-q.a.col||p.i-q.i);
-  const cx=w/2,cy=hh/2+8,rx=Math.max(90,w/2-70),ry=Math.max(90,hh/2-70);
+  const cx=w/2,cy=hh/2+6,rx=Math.max(90,w/2-66),ry=Math.max(90,hh/2-62);
   W.agents[W.out].nx=cx;W.agents[W.out].ny=cy;
-  others.forEach((o,k)=>{const an=Math.PI+k/others.length*2*Math.PI;o.a.nx=cx+Math.cos(an)*rx;o.a.ny=cy+Math.sin(an)*ry});
-  S.netSize=[w,hh];
-}
-function buildNet(){
-  const W=S.W;if(W)netLayout(W);if(!W){$('#nE').innerHTML=$('#nN').innerHTML=$('#nP').innerHTML='';return}
-  const key=W.agents.map(a=>a.id).join(',')+'|'+W.edges.length;const fresh=key!==S.netKey&&S.netKey!=='';S.netKey=key;
-  let E='';W.edges.forEach(e=>{const A=W.agents[e.from],B=W.agents[e.to];const g=edgeGeom(A,B);e.g=g;E+=`<path class="ed" id="ne${e.i}" d="M${g.p0[0]},${g.p0[1]} Q${g.c[0]},${g.c[1]} ${g.p1[0]},${g.p1[1]}" marker-end="url(#arrow)" style="opacity:${S.reveal.edge?1:0}"/>`});
-  $('#nE').innerHTML=`<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9z" fill="#55669e"/></marker></defs>`+E;
-  $('#nN').innerHTML=W.agents.map((a,i)=>{const name=a.n.length>18?wrap2(a.n):[a.n];const shape=a.k==='condition'?`<rect class="body" x="-24" y="-17" width="48" height="34" rx="7"/>`:`<circle class="body" r="20"/>`;
-    return `<g class="nd ${a.k==='force'?'force':''} ${i===W.out?'out':''} ${fresh?'add':''}" data-agent="${i}" tabindex="0" role="button" aria-label="${h(a.n)}" transform="translate(${a.nx},${a.ny})" style="animation-delay:${fresh?(i*.08).toFixed(2):0}s;${i<S.reveal.n?'':'opacity:0'}">
-      <circle class="halo" r="26"/>${shape}<path class="ring r1"/><path class="ring r2"/>
-      <text class="nv" text-anchor="middle" y="4">0.0%</text>
-      ${name.map((t,j)=>`<text class="nn" text-anchor="middle" y="${33+j*12}">${h(t)}</text>`).join('')}
-      <g class="mems" transform="translate(0,${-28})"></g></g>`}).join('');
-  NP=[];$('#nP').innerHTML='';
-  for(let k=0;k<70;k++){const c=document.createElementNS(NS,'circle');c.setAttribute('r','2.6');c.setAttribute('opacity','0');$('#nP').appendChild(c);NP.push(c)}
+  others.forEach((o,k)=>{const an=Math.PI+k/others.length*2*Math.PI;o.a.nx=cx+Math.cos(an)*rx;o.a.ny=cy+Math.sin(an)*ry});S.netSize=[w,hh];
 }
 function wrap2(s){const w=s.split(' ');let a='',b='';for(const x of w){if((a+' '+x).trim().length<=16&&!b)a=(a+' '+x).trim();else b=(b+' '+x).trim()}if(b.length>18)b=b.slice(0,17)+'…';return [a,b].filter(Boolean)}
-function edgeGeom(A,B){const dx=B.nx-A.nx,dy=B.ny-A.ny,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L;const off=Math.min(40,L*.18);const c=[(A.nx+B.nx)/2-uy*off,(A.ny+B.ny)/2+ux*off];
-  const tr=(P,Q,r)=>{const vx=Q[0]-P[0],vy=Q[1]-P[1],l=Math.hypot(vx,vy)||1;return [P[0]+vx/l*r,P[1]+vy/l*r]};
-  return {p0:tr([A.nx,A.ny],c,26),c,p1:tr([B.nx,B.ny],c,29)}}
+function edgeGeom(A,B){const dx=B.nx-A.nx,dy=B.ny-A.ny,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,off=Math.min(36,L*.16);const c=[(A.nx+B.nx)/2-uy*off,(A.ny+B.ny)/2+ux*off];const tr=(P,Q,r)=>{const vx=Q[0]-P[0],vy=Q[1]-P[1],l=Math.hypot(vx,vy)||1;return [P[0]+vx/l*r,P[1]+vy/l*r]};return {p0:tr([A.nx,A.ny],c,24),c,p1:tr([B.nx,B.ny],c,27)}}
 function qpt(g,t){const u=1-t;return [u*u*g.p0[0]+2*u*t*g.c[0]+t*t*g.p1[0],u*u*g.p0[1]+2*u*t*g.c[1]+t*t*g.p1[1]]}
-function arcPath(r,frac,dir){frac=Math.max(0,Math.min(.92,frac));if(frac<.01)return '';const a0=-Math.PI/2,a1=a0+dir*frac*2*Math.PI;const x0=r*Math.cos(a0),y0=r*Math.sin(a0),x1=r*Math.cos(a1),y1=r*Math.sin(a1);return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${frac>.5?1:0} ${dir>0?1:0} ${x1.toFixed(2)},${y1.toFixed(2)}`}
-function updateNet(T,dt){
-  const W=S.W,rep=curRep();if(!W)return;const tau=S.replay?0:S.tau,t=Math.max(1,Math.min(STEPS,Math.ceil(tau)||1));
-  const nodes=$('#nN').children;
-  for(let i=0;i<W.agents.length;i++){const g=nodes[i];if(!g)continue;const a=W.agents[i];
-    if(i>=S.reveal.n){g.style.opacity=0;continue}g.style.opacity='';
-    g.classList.toggle('sel',S.sel&&S.sel.type==='agent'&&S.sel.i===i);
-    if(!rep){g.querySelector('.nv').textContent='';continue}
-    const x=xAt(rep,i,tau),adv=adverse(a,x);
-    const r1=g.querySelector('.r1'),r2=g.querySelector('.r2');r1.setAttribute('d',arcPath(26,Math.min(1,Math.abs(x)*1.1),x>=0?1:-1));r1.setAttribute('stroke',adv?'#E3B05C':'#80AADC');
-    let pos=0,neg=0;if(tau>0&&rep.C[t])rep.C[t][i].forEach(c=>{if(c[0]==='self')return;if(c[2]>0)pos+=c[2];else neg+=c[2]});
-    const collide=tau>0&&pos>.06&&neg<-.06;r2.setAttribute('d',collide?arcPath(30,.5,x>=0?-1:1):'');r2.setAttribute('stroke',collide?'#E3B05C':'none');r2.setAttribute('stroke-dasharray','2 3');r2.setAttribute('stroke-width','1.6');
-    g.querySelector('.nv').textContent=tau>0?fmtO(x):'now';
-    const d=Math.abs(rep.X[t][i]-rep.X[t-1][i]);const halo=g.querySelector('.halo');const ph=(T*1.4+i*.3)%1;halo.setAttribute('opacity',tau>0&&tau<STEPS&&S.playing?(d*2.6*(1-ph)).toFixed(3):'0');halo.setAttribute('r',(24+ph*14).toFixed(1));halo.setAttribute('stroke',adv?'#E3B05C':'#618DD0');
-    let mem=0;for(let k=1;k<=Math.floor(tau);k++)if(Math.abs(rep.X[k][i])>.15)mem++;
-    const mg=g.querySelector('.mems');const want=Math.min(5,mem);if(mg.childNodes.length!==want){mg.innerHTML=Array.from({length:want},(_,k)=>`<circle class="mem" r="1.6" cx="${(k-(want-1)/2)*5}" cy="0"/>`).join('')}
-  }
-  // edges and particles
+function arcPath(r,frac,dir){frac=Math.max(0,Math.min(.92,frac));if(frac<.01)return '';const a0=-Math.PI/2,a1=a0+dir*frac*2*Math.PI;return `M${(r*Math.cos(a0)).toFixed(2)},${(r*Math.sin(a0)).toFixed(2)} A${r},${r} 0 ${frac>.5?1:0} ${dir>0?1:0} ${(r*Math.cos(a1)).toFixed(2)},${(r*Math.sin(a1)).toFixed(2)}`}
+function buildNet(){
+  const W=S.W;if(!W){$('#nE').innerHTML=$('#nN').innerHTML=$('#nP').innerHTML='';return}netLayout(W);
+  $('#nE').innerHTML=`<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9z" fill="#A8C6E8"/></marker></defs>`+W.edges.map(e=>{const g=edgeGeom(W.agents[e.from],W.agents[e.to]);e.g=g;return `<path class="ed" id="ne${e.i}" d="M${g.p0[0]},${g.p0[1]} Q${g.c[0]},${g.c[1]} ${g.p1[0]},${g.p1[1]}" marker-end="url(#arrow)"/>`}).join('');
+  $('#nN').innerHTML=W.agents.map((a,i)=>`<g class="nd ${a.k==='force'?'force':''} ${i===W.out?'out':''}" data-agent="${i}" tabindex="0" role="button" aria-label="${h(a.n)}" transform="translate(${a.nx.toFixed(1)},${a.ny.toFixed(1)})">
+    <circle class="halo" r="24"/>${a.k==='condition'?'<rect class="body" x="-22" y="-16" width="44" height="32" rx="7"/>':'<circle class="body" r="19"/>'}<path class="ring"/>
+    <text class="nv" text-anchor="middle" y="3.5"></text>${(a.n.length>18?wrap2(a.n):[a.n]).map((t,j)=>`<text class="nn" text-anchor="middle" y="${36+j*12}">${h(t)}</text>`).join('')}</g>`).join('');
+  NP=[];$('#nP').innerHTML='';for(let k=0;k<60;k++){const c=document.createElementNS(NS,'circle');c.setAttribute('r','2.4');c.setAttribute('opacity','0');$('#nP').appendChild(c);NP.push(c)}
+}
+function updateNet(T){
+  const W=S.W,rep=curRep();if(!W)return;const tau=S.tau,t=Math.max(1,Math.min(STEPS,Math.ceil(tau)||1)),nodes=$('#nN').children;
+  for(let i=0;i<W.agents.length;i++){const g=nodes[i];if(!g)continue;const a=W.agents[i];g.style.opacity=i<S.reveal.n?'':'0';
+    g.classList.toggle('sel',!!(S.detail&&S.detail.type==='agent'&&S.detail.i===i));if(!rep)continue;
+    const x=xAt(rep,i,tau),adv=adverse(a,x);const rg=g.querySelector('.ring');rg.setAttribute('d',arcPath(24,Math.min(1,Math.abs(x)*1.1),x>=0?1:-1));rg.setAttribute('stroke',adv?'#C27B14':'#4362B2');
+    g.querySelector('.nv').textContent=tau>0.05?fmtO(x):'';
+    const dd=Math.abs(rep.X[t][i]-rep.X[t-1][i]),ph=(T*1.3+i*.3)%1,halo=g.querySelector('.halo');halo.setAttribute('stroke',adv?'#C27B14':'#618CD0');halo.setAttribute('opacity',S.playing?(dd*2.4*(1-ph)).toFixed(3):'0');halo.setAttribute('r',(22+ph*12).toFixed(1))}
   let pi=0;
-  W.edges.forEach(e=>{const el=$('#ne'+e.i);if(!el)return;let v=0;if(rep&&tau>0&&rep.C[t]){const c=rep.C[t][e.to].find(c=>c[0]==='a'&&c[3]===e.i);if(c)v=c[2]}
-    el.classList.toggle('on',Math.abs(v)>.02);el.style.opacity=S.reveal.edge?'':'0';
-    if(!S.reveal.edge||Math.abs(v)<.015||RM)return;const n=Math.min(4,Math.ceil(Math.abs(v)*16)),adv=adverse(W.agents[e.to],v);
-    for(let k=0;k<n&&pi<NP.length;k++,pi++){const s=((T*(.25+Math.abs(v)*1.5))+k/n+e.i*.17)%1;const [x,y]=qpt(e.g,s);const c=NP[pi];c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));c.setAttribute('fill',adv?'#E3B05C':'#80AADC');c.setAttribute('opacity',(Math.sin(s*Math.PI)*.95).toFixed(2))}});
+  W.edges.forEach(e=>{const el=$('#ne'+e.i);if(!el)return;el.style.opacity=S.reveal.edge?'':'0';let v=0;if(rep&&tau>0){const c=rep.C[t][e.to].find(c=>c[0]==='a'&&c[3]===e.i);if(c)v=c[2]}
+    el.classList.toggle('on',Math.abs(v)>.02);if(!S.reveal.edge||Math.abs(v)<.015||RM)return;const n=Math.min(3,Math.ceil(Math.abs(v)*14)),adv=adverse(W.agents[e.to],v);
+    for(let k=0;k<n&&pi<NP.length;k++,pi++){const s=((T*(.25+Math.abs(v)*1.4))+k/n+e.i*.17)%1,[x,y]=qpt(e.g,s);const c=NP[pi];c.setAttribute('cx',x.toFixed(1));c.setAttribute('cy',y.toFixed(1));c.setAttribute('fill',adv?'#C27B14':'#4362B2');c.setAttribute('opacity',(Math.sin(s*Math.PI)*.9).toFixed(2))}});
   for(;pi<NP.length;pi++)NP[pi].setAttribute('opacity','0');
 }
 
-/* ---------- Market Pulse ---------- */
-let pctx=null;
-function marketActivity(){const rep=curRep();let A=.08+S.liveBoost;if(rep&&S.tau>0){const t=Math.max(1,Math.ceil(S.tau));for(let i=0;i<S.W.agents.length;i++)A+=Math.abs(rep.X[t][i]-rep.X[t-1][i])*(S.playing?1.6:.5)}if(S.replay)A+=.3;return Math.min(1.2,A)}
-function drawPulse(T){if(!pctx)pctx=$('#pulse').getContext('2d');const A=S.W?marketActivity():0,c=pctx;c.clearRect(0,0,192,48);c.strokeStyle='#A6BFE5';c.lineWidth=2;c.beginPath();for(let x=0;x<=192;x+=3){const y=24+Math.sin(x*.07+T*(1.5+A*7))*(2+A*16)*Math.sin(x/192*Math.PI);x?c.lineTo(x,y):c.moveTo(x,y)}c.stroke();
-  const t=$('#pulseTxt');const w=A<.28?'Calm':A<.6?'Active':'Pressure building';if(t.textContent!==w)t.textContent=w}
-
-/* ---------- Main loop ---------- */
+/* ---------- Loop ---------- */
 let lastT=0;
 function frame(now){
   const T=now/1000,dt=Math.min(.1,(now-lastT)/1000||0);lastT=now;
   if(S.camT){const k=Math.min(1,(now-S.camT.t0)/S.camT.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,f=S.camT.from,t=S.camT.to;S.cam={x:f.x+(t.x-f.x)*e,y:f.y+(t.y-f.y)*e,w:f.w+(t.w-f.w)*e,h:f.h+(t.h-f.h)*e};applyCam();if(k>=1)S.camT=null}
-  if(S.playing&&S.mc){S.tau=Math.min(STEPS,S.tau+dt/1.6);if(S.tau>=STEPS){S.playing=false;renderPlayBtn()}$('#scrub').value=S.tau}
-  if(S.replay&&S.replay.playing){S.replay.m=Math.min(5,S.replay.m+dt/1.5);if(S.replay.m>=5)S.replay.playing=false;const rb=$('#rpSlider');if(rb)rb.value=S.replay.m;renderReplayLabel()}
-  S.liveBoost=Math.max(0,S.liveBoost-dt*.25);
-  const st=Math.floor(S.tau+1e-6);if(st!==S.lastStep){S.lastStep=st;onStep()}
-  if(S.W){drawHeat(T);updateNet(T,dt);drawPulse(T)}
+  if(S.playing&&S.mc){S.tau=Math.min(STEPS,S.tau+dt/1.5);if(S.tau>=STEPS){S.playing=false;renderPlay()}$('#scrub').value=S.tau}
+  const st=Math.floor(S.tau+1e-6);if(st!==S.lastStep){S.lastStep=st;renderStep();if(S.detail&&S.detail.type!=='signal')renderSide()}
+  if(S.W){drawHeat(T);updateNet(T)}
   requestAnimationFrame(frame);
 }
-function onStep(){renderTimelineState();if(!S.sel||S.sel.type==='why')renderRight()}
 
-/* ---------- Ask: world building ---------- */
-function showWorld(){$('#landing').hidden=true;$('#world').hidden=false;$('#miniAsk').hidden=false;$('#pulseBox').hidden=false;$('#liveTog').hidden=false;$('#advTog').hidden=false;sizeMap()}
+/* ---------- Ask ---------- */
 async function ask(q){
-  if(S.busy)return;S.busy=true;setLive(false);S.replay=null;
-  const spec=understand(q,S.W?S.W.geo:null);
-  showWorld();$('#q2').value=q;window.scrollTo&&window.scrollTo(0,0);
-  Object.assign(S,{spec,W:null,mc:null,rank:null,rankSel:0,sel:null,tau:0,playing:false,decision:null,sens:null,inv:{},cmp:null,path:'A',lastStep:-1,reveal:{n:0,sig:0,edge:0}});
-  buildNet();renderPlayBtn();
+  if(S.busy)return;S.busy=true;
+  const spec=understand(q,S.W?S.W.geo:null);$('#q').value=q;
+  $('#askzone').classList.add('compact');$('#intro').hidden=true;$('#ex').hidden=true;$('#results').hidden=false;$('#readas').hidden=false;$('#more').hidden=false;$('#foot').hidden=false;$('#simHere').hidden=true;
+  Object.assign(S,{spec,W:null,mc:null,rank:null,rankSel:0,detail:null,tau:0,playing:false,decision:null,inv:{},sens:null,cmp:null,path:'A',lastStep:-1,reveal:{n:0,sig:0,edge:0}});
+  $('#dCmp').open=false;sizeMap();buildNet();renderPlay();
   if(!S.nav)S.nav=mkGeo('africa',{});if(!S.cam){S.cam=fitBB(bbFor(mkGeo('africa',{})));applyCam()}
-  renderCrumbs();renderMapLayers();
-  $('#ctx').innerHTML='';$('#left').innerHTML='';$('#right').innerHTML='';
-  const steps=[['Understanding the question',''],['Identifying the market',''],['Connecting evidence',''],['Identifying agents',''],['Activating signals',''],['Building relationships',''],['Simulating possible futures','']];
-  if(spec.type==='ranking')steps.splice(6,0,['Comparing locations','']);
-  $('#build').hidden=false;
-  const draw=(k,done)=>{$('#buildCard').innerHTML=`<h3>${done?'Market ready':'Building the market world'}</h3>`+steps.map((s,i)=>`<div class="bstep ${i<k||done?'done':i===k?'on':''}"><i>${i<k||done?'✓':i===k?'›':'·'}</i><span>${h(s[0])}${s[1]?`<small>${s[1]}</small>`:''}</span></div>`).join('')+(done?`<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn primary" id="runFirst">Run simulation</button><button class="btn ghost" id="exploreFirst">Explore the market first</button></div>`:'')};
-  draw(0);await sleep(380);
-  const crumbs=geoCrumbs(spec.geo).filter(c=>c.level!=='africa'&&!c.stateOnly).map(c=>c.label);
-  const secLabel=(SECTORS[spec.sector]||{label:(GENERIC_NAMES[spec.sector]||{}).label||'Market'}).label;
-  steps[0][1]=h(spec.q);
-  steps[1][1]=h([...(crumbs.length?crumbs:['Africa']),secLabel,...(spec.product?[spec.product[0].toUpperCase()+spec.product.slice(1)]:[])].join(' → '));
-  draw(1);S.nav=spec.type==='ranking'?spec.geo:spec.geo;navTo(S.nav);await sleep(900);
-  let W=buildWorld(spec);S.W=W;W._ext=null;
-  const srcs=new Set(W.signals.map(s=>s.src));
-  steps[2][1]=`${W.signals.length} signals from ${srcs.size} source types · evidence coverage ${W.prof.evidence.toFixed(2)}${W.prof.evidence<.4?' (limited)':''}`;
-  draw(2);renderMapLayers();await sleep(500);
-  steps[3][1]=h(W.agents.map(a=>a.n).join(', '));draw(3);buildNet();
-  for(let i=1;i<=W.agents.length;i++){S.reveal.n=i;await sleep(110)}
-  steps[4][1]=`${W.signals.filter(s=>s.on).length} active signals, ${W.signals.filter(s=>s.life==='contested').length} contested`;draw(4);S.reveal.sig=1;await sleep(650);
-  steps[5][1]=`${W.edges.length} relationships`;draw(5);S.reveal.edge=1;buildNet();await sleep(500);
-  let k=6;
-  if(spec.type==='ranking'){const cands=rankCandidates(spec.geo);steps[6][1]=`${cands.length} locations: ${h(cands.slice(0,6).map(geoShort).join(', '))}${cands.length>6?'…':''}`;draw(6);await sleep(60);
-    S.rank=rankRun(spec,80);const firstGood=S.rank.findIndex(r=>!r.thin);S.rankSel=firstGood<0?0:firstGood;
-    W=buildWorld(spec,S.rank[S.rankSel].geo);S.W=W;buildNet();renderMapLayers();k=7}
-  steps[k][1]=`${200} runs across ${STEPS} steps`;draw(k);await sleep(60);
-  simulateNow({quiet:true});
-  draw(steps.length,true);
-  $('#runFirst').onclick=()=>{$('#build').hidden=true;S.tau=0;S.playing=true;renderPlayBtn()};
-  $('#exploreFirst').onclick=()=>{$('#build').hidden=true};
-  remember('World built',`${h(spec.q)} → ${h(geoLabel(W.geo))}, ${h(W.sectorLabel)}. ${W.agents.length} agents, ${W.signals.length} signals, ${W.assumptions.length} assumptions introduced.`);
-  if(spec.type==='strategy'){S.cmpMode='int';switchTab('compare')}else if(spec.type==='history'){switchTab('memory');startReplay()}else switchTab('summary');
-  S.busy=false;
+  $('#side').innerHTML='';$('#readas').innerHTML=`<span class="muted">Reading your question…</span>`;
+  const steps=['Reading your question','Finding the market','Connecting evidence','Placing market agents','Simulating possible outcomes'];if(spec.type==='ranking')steps.splice(4,0,'Comparing locations');
+  const sub=[];$('#build').hidden=false;
+  const draw=k=>{$('#buildCard').innerHTML=`<h3>Building the market</h3>`+steps.map((s,i)=>`<div class="bstep ${i<k?'done':i===k?'on':''}"><i>${i<k?'✓':i===k?'›':'·'}</i><span>${h(s)}${sub[i]?`<small>${h(sub[i])}</small>`:''}</span></div>`).join('')};
+  draw(0);await sleep(300);
+  sub[1]=geoLabel(spec.geo);draw(1);navTo(spec.geo);await sleep(750);
+  let W=buildWorld(spec);S.W=W;
+  sub[2]=`${W.signals.length} signals from ${new Set(W.signals.map(s=>s.src)).size} kinds of source`;draw(2);renderMapLayers();await sleep(380);
+  sub[3]=W.agents.map(a=>a.n).join(', ');draw(3);buildNet();S.reveal.sig=1;
+  for(let i=1;i<=W.agents.length;i++){S.reveal.n=i;await sleep(80)}S.reveal.edge=1;await sleep(250);
+  let k=4;
+  if(spec.type==='ranking'){const c=rankCandidates(spec.geo);sub[4]=`${c.length} locations`;draw(4);await sleep(50);S.rank=rankRun(spec,80);const g=S.rank.findIndex(r=>!r.thin);S.rankSel=g<0?0:g;W=buildWorld(spec,S.rank[S.rankSel].geo);S.W=W;buildNet();k=5}
+  draw(k);await sleep(50);simulate(true);
+  $('#build').hidden=true;
+  remember('Question',`${h(spec.q)} → ${h(geoLabel(W.geo))}. ${W.agents.length} agents, ${W.signals.length} signals.`);
+  if(spec.type==='strategy'){S.cmpMode='int';$('#dCmp').open=true;renderCompare()}
+  S.busy=false;S.tau=0;S.playing=!RM;renderPlay();
 }
-function simulateNow(o={}){
-  const W=S.W;W._ext=null;W.measure=W.events.length?'effect':'level';
-  const prevPath=S.path;S.mc=monteCarlo(W,200);S.sens=null;
-  const best=S.mc.paths.slice().sort((a,b)=>b.prob-a.prob)[0];S.path=(o.keepPath&&S.mc.paths.find(p=>p.id===prevPath))?prevPath:best.id;
-  if(!o.quiet)remember('Simulation',`Re-ran with ${W.events.length?W.events.map(e=>h(e.label)).join(', '):'no intervention'}. Most supported: ${h(best.title)} (${Math.round(best.prob*100)}%).`);
+function simulate(quiet,keepPath){
+  const W=S.W;W._ext=null;const prev=S.path;S.mc=monteCarlo(W,200);S.sens=null;S.cmp=null;
+  const best=S.mc.paths.slice().sort((a,b)=>b.prob-a.prob)[0];S.path=keepPath&&S.mc.paths.find(p=>p.id===prev)?prev:best.id;
+  if(!quiet)remember('Re-run',`${W.events.map(e=>h(e.label)).join(', ')||'No intervention'}. Most likely: ${h(best.title)} (${Math.round(best.prob*100)}%).`);
   renderAll();
 }
-function renderAll(){renderCtx();renderLeft();renderMapLayers();buildNet();renderRight();renderTimeline();renderComposer();renderDeck()}
+function renderAll(){renderReadAs();renderMapLayers();buildNet();renderCrumbs();renderTicks();renderStep();renderScenario();renderSide();if($('#dEvi').open)renderEvidence();if($('#dMem').open)renderMemory();if($('#dCmp').open)renderCompare()}
 
-/* ---------- Context bar ---------- */
-function renderCtx(){const W=S.W,sp=S.spec;const out=W.agents[W.out];
-  $('#ctx').innerHTML=`<span class="label">Verisavo read your question as</span>
-  <span class="chipv">Geography: <b>${h(geoLabel(W.geo))}</b></span><span class="chipv">Sector: <b>${h(W.sectorLabel)}${sp.product?' · '+h(sp.product):''}</b></span>
-  <span class="chipv">Question type: <b>${{intervention:'What if',ranking:'Where or which',strategy:'Compare strategies',history:'How did we get here'}[sp.type]}</b></span>
-  <span class="chipv">${W.events.length?'Intervention':'Scenario'}: <b>${W.events.length?h(W.events.map(e=>e.label).join(', ')):'Current signals only'}</b></span>
-  <span class="chipv">Tracking: <b>${h(out.n)} · ${h(out.m.toLowerCase())}</b></span><span class="chipv">Period: <b>${sp.horizon} ${sp.stepUnit==='Mo'?'months':'weeks'}</b></span>
-  ${sp.notes.length?`<div class="notes">${sp.notes.map(n=>`<div>${h(n)}</div>`).join('')}</div>`:''}`}
-
-/* ---------- Left: Market World ---------- */
-function renderLeft(){
-  const W=S.W,rep=curRep(),t=Math.min(STEPS,Math.round(S.tau));
-  const sec=(id,title,count,body)=>`<details data-sec="${id}" ${S.open.has(id)?'open':''}><summary>${title}<span class="c">${count}</span></summary>${body}</details>`;
-  const out=W.agents[W.out];
-  const ctx=`<dl class="kv"><dt>Question</dt><dd>${h(S.spec.q)}</dd><dt>Geography</dt><dd>${h(geoLabel(W.geo))}</dd><dt>Sector</dt><dd>${h(W.sectorLabel)}</dd><dt>Period</dt><dd>${S.spec.horizon} ${S.spec.stepUnit==='Mo'?'months':'weeks'}, ${STEPS} steps</dd><dt>Outcome</dt><dd>${h(out.n)}: ${h(out.m.toLowerCase())}</dd><dt>Measured as</dt><dd>${W.measure==='effect'?'Effect vs the market continuing as it is':'Change under current signals'}</dd></dl>`;
-  const ag=`<div class="lst">${W.agents.map((a,i)=>{const x=rep?xAt(rep,i,S.tau):0;return `<button class="li ${S.sel&&S.sel.type==='agent'&&S.sel.i===i?'sel':''}" data-agent="${i}"><span class="r1"><b>${h(a.n)}</b><span class="v ${adverse(a,x)?'pr':'up'}">${S.tau>0?fmtO(x):''}</span></span><small>${h(a.m)} · ${a.k==='actor'?'actor':a.k==='condition'?'market condition':'external force'}</small></button>`}).join('')}</div>`;
-  const locs=W.places.filter(p=>!p.tags.includes('route'));
-  const lo=`<div class="lst">${locs.map(p=>`<button class="li" data-place="${h(p.id)}"><span class="r1"><b>${h(p.name)}</b><span class="v">${p.tags.filter(t=>['port','capital','market','rural','far','thin'].includes(t)).map(t=>({far:'context',thin:'limited evidence'}[t]||t)).slice(0,2).join(' · ')}</span></span></button>`).join('')}</div>`;
-  const sg=`<div class="lst">${W.signals.map((s,k)=>`<button class="li ${S.sel&&S.sel.type==='signal'&&S.sel.k===k?'sel':''}" data-signal="${k}" style="${s.on?'':'opacity:.5'}"><span class="r1"><b>${h(s.title)}</b></span><small><span class="life ${s.life}">${s.life}</span> ${s.src}${s.live?' · live':''}</small></button>`).join('')}</div>`;
-  const ev=`<div class="lst">${W.events.length?W.events.map(e=>`<div class="li"><span class="r1"><b>${h(e.label)}</b><span class="v">${e.src}</span></span><small>From ${STEP_NAMES[1].toLowerCase()} (T1) onwards</small></div>`).join(''):'<div class="li"><small>No events. Add one from the Scenario Composer under the map.</small></div>'}</div>`;
-  const rl=`<div class="lst">${W.edges.map(e=>`<div class="edge-row"><span>${h(W.agents[e.from].n)} → ${h(W.agents[e.to].n)} <span class="muted">${h(e.label)}</span></span>${S.adv?`<span class="mono muted">${(e.w*e.lf).toFixed(2)}${e.as?'·a':''}</span>`:''}</div>`).join('')}</div>${S.adv?'<p class="adv-note">Weight = base strength × location factor. “·a” marks a weight scaled by an assumption.</p>':''}`;
-  const va=`<div class="lst">${W.assumptions.map(a=>`<div class="slider-row"><span class="r1" style="display:flex;justify-content:space-between;gap:6px"><b style="font-weight:500;font-size:12.5px">${h(a.label)}</b><span class="st ${a.verified?'Inference':'Assumption'}">${a.verified?'Verified':'Assumption'}</span></span><small class="muted">${a.kind==='actionP'?'Likelihood':a.kind==='edge'?'Multiplier':'Bias'} ${a.mean.toFixed(2)} ± ${a.sd.toFixed(2)}</small>${S.adv?`<input type="range" data-as="${a.id}" min="${(a.kind==='force'?-.4:a.kind==='actionP'?0:.3)}" max="${(a.kind==='force'?.4:a.kind==='actionP'?1:1.8)}" step=".01" value="${a.mean}" aria-label="${h(a.label)}">`:''}</div>`).join('')}</div>${S.adv?`<p class="adv-note">Model: ${S.mc.N} runs per simulation, decay ${W.decay}, memory amplification 0.35, ${STEPS} steps. Sliders move the assumption's central value.</p>`:''}`;
-  $('#left').innerHTML=`<div class="panel-h"><h2>Market World</h2><span class="label">${h(geoShort(W.geo))}</span></div>`+sec('ctx','World','',ctx)+sec('agents','Agents',W.agents.length,ag)+sec('locations','Locations',locs.length,lo)+sec('signals','Signals',W.signals.length,sg)+sec('events','Events',W.events.length,ev)+sec('rels','Relationships',W.edges.length,rl)+sec('vars','Variables',W.assumptions.length,va);
-  $$('#left details').forEach(d=>d.addEventListener('toggle',()=>{d.open?S.open.add(d.dataset.sec):S.open.delete(d.dataset.sec)}));
+/* ---------- Read-as sentence ---------- */
+function renderReadAs(){
+  const W=S.W,sp=S.spec,out=W.agents[W.out],ev=W.events.map(e=>e.label.toLowerCase()).join(' and ');
+  const what=sp.type==='ranking'?`Comparing locations for: ${h(sp.q.replace(/\?$/,''))}.`:ev?`Simulating <b>${h(ev)}</b>`:'Simulating the market under its current signals';
+  $('#readas').innerHTML=`${what}${sp.type==='ranking'?'':` in <b>${h(geoLabel(W.geo))}</b>`} over <b>${sp.horizon} ${sp.stepUnit==='Mo'?'months':'weeks'}</b>, tracking <b>${h(out.n.toLowerCase())}: ${h(out.m.toLowerCase())}</b> (${h(W.sectorLabel.toLowerCase())}).`+(sp.notes.length?`<span class="asm">Assumed: ${h(sp.notes.map(n=>n.replace(/\.$/,'')).join('; '))}.</span>`:'');
 }
 
-/* ---------- Right: What is happening / inspectors ---------- */
+/* ---------- Player ---------- */
 function stepIdx(){return Math.max(0,Math.min(STEPS,Math.floor(S.tau+1e-6)))}
-function stepLabel(t){const sp=S.spec,d=sp.horizon/STEPS;return t===0?'Now':`${sp.stepUnit==='Mo'?'Month':'Week'} ${+(t*d).toFixed(1)}`}
-function renderRight(){
-  if(!S.W||!S.mc)return;
-  if(S.sel){if(S.sel.type==='agent')return inspectAgent(S.sel.i);if(S.sel.type==='signal')return inspectSignal(S.sel.k);if(S.sel.type==='place')return inspectPlace(S.sel.g,S.sel.pid);if(S.sel.type==='why')return renderWhy()}
-  const W=S.W,rep=curRep(),t=stepIdx();
-  let sigs=[];
-  if(t===0)sigs=W.signals.filter(s=>s.on).map(s=>({s,v:s.strength})).sort((a,b)=>b.v-a.v).slice(0,5);
-  else{const tot={};rep.C[t].forEach(cc=>cc.forEach(c=>{if(c[0]==='s')tot[c[1]]=(tot[c[1]]||0)+Math.abs(c[2])}));sigs=Object.entries(tot).map(([k,v])=>({s:W.signals[+k],v})).sort((a,b)=>b.v-a.v).slice(0,5)}
-  const sigH=sigs.map(({s})=>`<button class="fi" data-signal="${s.k}"><span class="r1"><b>${h(s.title)}</b><span class="life ${s.life}">${s.life}</span></span><small>→ ${h(s.tg.map(x=>W.agents[x[0]].n).join(', '))} · ${s.src} · confidence ${s.conf.toFixed(2)}</small></button>`).join('');
-  let reacts='';
-  if(t>0){const mv=W.agents.map((a,i)=>({a,i,d:rep.X[t][i]-rep.X[t-1][i],x:rep.X[t][i]})).filter(m=>Math.abs(m.d)>.008).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,5);
-    reacts=mv.map(m=>{const top=rep.C[t][m.i].filter(c=>c[0]!=='self').sort((a,b)=>Math.abs(b[2])-Math.abs(a[2]))[0];return `<button class="fi" data-agent="${m.i}"><span class="r1"><b>${h(m.a.n)}</b><span class="mono ${adverse(m.a,m.d)?'pr':'up'}">${arrow(m.d)} ${Math.abs(m.d*30).toFixed(1)} pts</span></span><small>${h(m.a.m)} now ${fmtO(m.x)}${top?` · driven by ${h(srcName(W,top))}`:''}</small></button>`}).join('')||'<small class="muted">Agents are holding their position this step.</small>'}
-  const pats=patterns(t);
-  const unk=W.assumptions.filter(a=>!a.verified).map(a=>`<div class="fi"><span class="r1"><b>${h(a.label)}</b><span class="st Assumption">Assumption</span></span><small>${h(a.unknown)} Introduced as ${a.mean.toFixed(2)} ± ${a.sd.toFixed(2)}.</small></div>`).join('');
-  const warns=warnings();
-  $('#right').innerHTML=`<div class="panel-h"><h2>What is happening</h2><span class="label">T${t} · ${h(stepLabel(t))}</span></div>
-   <div class="sec"><h3>${t===0?'Signals in the market now':'Active signals this step'}</h3><div class="feed">${sigH||'<small class="muted">No active signals.</small>'}</div></div>
-   <div class="sec"><h3>Agent reactions</h3><div class="feed">${t===0?'<small class="muted">Press play or step forward to watch agents respond.</small>':reacts}</div></div>
-   <div class="sec"><h3>Emerging patterns</h3>${pats.length?pats.map(p=>`<div class="pattern"><i>${p[0]}</i><span>${p[1]}</span></div>`).join(''):'<small class="muted">No clear pattern yet.</small>'}</div>
-   <div class="sec"><h3>Unknowns</h3><div class="feed">${unk||'<small class="muted">All introduced assumptions have been investigated.</small>'}</div></div>
-   ${warns.length?`<div class="sec"><h3>Warnings</h3>${warns.map(w=>`<div class="warn"><span>!</span><span>${w}</span></div>`).join('')}</div>`:''}`;
-}
-function patterns(t){
-  const W=S.W,rep=curRep(),out=[];if(!rep)return out;
-  if(t===0){const contested=W.signals.filter(s=>s.life==='contested');if(contested.length)out.push(['⇄',`Contradictory evidence: “${h(contested[0].title)}” is contested by “${h(W.signals.find(s=>s.id===contested[0].contraWith)?.title||'another signal')}”.`]);
-    const multi=W.signals.filter(s=>s.places.length>=2&&s.on);if(multi.length)out.push(['◎',`Pattern seen in ${multi[0].places.length} locations: ${h(multi[0].title.toLowerCase())}.`]);return out}
-  rep.acts.filter(a=>a.t===t).forEach(a=>out.push(['◆',`Turning point: ${h(a.text)}.`]));
-  W.agents.forEach((a,i)=>{const cc=rep.C[t][i].filter(c=>c[0]!=='self');const pos=cc.filter(c=>c[2]>.05).sort((x,y)=>y[2]-x[2]),neg=cc.filter(c=>c[2]<-.05).sort((x,y)=>x[2]-y[2]);
-    if(pos.length&&neg.length){const net=pos.reduce((s,c)=>s+c[2],0)+neg.reduce((s,c)=>s+c[2],0);out.push(['⇄',`Forces collide at ${h(a.n)}: ${h(srcName(W,pos[0]))} pushes up while ${h(srcName(W,neg[0]))} pushes down${Math.abs(net)<.04?', roughly cancelling out':''}.`])}
-    else if(pos.length>=2)out.push(['⇉',`${h(srcName(W,pos[0]))} and ${h(srcName(W,pos[1]))} reinforce each other on ${h(a.n)}.`]);
-    else if(neg.length>=2)out.push(['⇉',`${h(srcName(W,neg[0]))} and ${h(srcName(W,neg[1]))} reinforce each other on ${h(a.n)}.`])});
-  const P=W.places.filter(p=>!p.tags.includes('route')&&!p.tags.includes('far'));const n=P.filter(p=>spatial(W,p,t)>.35).length,n0=P.filter(p=>spatial(W,p,t-1)>.35).length;
-  if(n>n0&&W.origin[0]&&W.placeIdx[W.origin[0]])out.push(['◌',`Effects spreading from ${h(W.placeIdx[W.origin[0]].name.replace(/ hub$/,''))} to ${n} locations.`]);
-  return out.slice(0,5);
-}
-function warnings(){const W=S.W,w=[];
-  if(W.prof.evidence<.4)w.push(`Evidence for ${h(geoShort(W.geo))} is limited (coverage ${W.prof.evidence.toFixed(2)}). More of this simulation rests on assumptions, so ranges are wider.`);
-  if(W.places.some(p=>p.tags.includes('thin')))w.push('Some locations are schematic because Verisavo holds little evidence there.');
-  W.signals.filter(s=>s.freshness>30&&s.on).forEach(s=>w.push(`Signal fading: “${h(s.title)}” last observed ${s.freshness} days ago.`));
-  W.signals.filter(s=>s.life==='contested').slice(0,1).forEach(s=>w.push(`Contested signal: “${h(s.title)}”. Treated with reduced weight.`));
-  if(S.sens&&S.sens[0]&&S.sens[0].swing>.12)w.push(`One assumption, ${h(S.sens[0].a.label.toLowerCase())}, can swing the outcome by ${(S.sens[0].swing*30).toFixed(1)} points. Investigate before deciding.`);
-  return w.slice(0,4)}
-function backBtn(){return '<button class="back" data-back>← What is happening</button>'}
-function inspectAgent(i){
-  const W=S.W,a=W.agents[i],rep=curRep(),t=stepIdx(),x=rep.X[t][i];
-  const cc=t>0?rep.C[t][i].filter(c=>c[0]!=='self').sort((p,q)=>Math.abs(q[2])-Math.abs(p[2])):[];
-  const sigs=W.signals.filter(s=>s.tg.some(g=>g[0]===i));const obs=sigs.reduce((s,x)=>s+x.frequency,0);const conf=sigs.length?sigs.reduce((s,x)=>s+x.conf,0)/sigs.length:W.prof.evidence;
-  const role=ROLES[a.id];let react='No change in behaviour yet.';
-  if(Math.abs(x)>.05){const up=x>0;react=(up?role.up:role.dn)||(up?`${a.m} increases`:`${a.m} decreases`)}
-  const acted=rep.acts.filter(ac=>ac.agent===i&&ac.t<=Math.max(t,0));const rules=W.rules.filter(r=>r.agent===a.id);
-  const chain=t>0?trace(W,rep,i,t):[];
-  $('#right').innerHTML=`<div class="sec">${backBtn()}<div class="insp-h"><div><span class="label">${a.k==='actor'?'Market agent':a.k==='condition'?'Market condition':'External force'}</span><h3>${h(a.n)}</h3><small class="muted">${h(a.why||'')}</small></div><button class="btn sm" data-close aria-label="Close">×</button></div></div>
-  <div class="sec"><h3>Reasoning at T${t}</h3><dl class="reason">
-   <dt>Current position</dt><dd>${h(a.m)} ${t>0?`<b class="${adverse(a,x)?'pr':'up'}">${fmtO(x)}</b> vs now`:'at today’s level'}</dd>
-   <dt>Current pressure</dt><dd>${cc[0]?`${h(srcName(W,cc[0]))} <span class="muted">(${cc[0][2]>0?'pushing up':'pushing down'})</span>`:'None yet'}</dd>
-   <dt>Likely reaction</dt><dd>${h(react)}${rules.length&&!acted.length?`<br><span class="muted">May: ${h(rules[0].text.toLowerCase())} if conditions persist.</span>`:''}</dd>
-   <dt>Evidence</dt><dd>${sigs.length?`${obs} observations across ${sigs.length} signal${sigs.length>1?'s':''} (${[...new Set(sigs.map(s=>s.src))].join(', ')})`:'No direct signals. Behaviour follows its relationships and assumptions.'}</dd>
-   <dt>Confidence</dt><dd>${confWord(conf)} (${conf.toFixed(2)})</dd></dl></div>
-  ${acted.length?`<div class="sec"><h3>Memory and actions</h3>${acted.map(ac=>`<div class="pattern"><i>◆</i><span>T${ac.t}: ${h(ac.text)}</span></div>`).join('')}</div>`:''}
-  ${chain.length>1?`<div class="sec"><h3>Why did it behave this way?</h3>${chainHTML(W,chain)}</div>`:''}
-  ${role.c?`<div class="sec"><h3>What it weighs</h3><div class="chips">${role.c.map(c=>`<span class="chip">${h(c)}</span>`).join('')}</div><small class="muted">Weights come from the connected evidence and the location profile, not a fixed persona.</small></div>`:''}
-  <div class="sec"><h3>Relationships</h3><div class="feed">${a.inE.map(e=>`<small>← ${h(W.agents[e.from].n)} · ${h(e.label)}</small>`).join('')}${a.outE.map(e=>`<small>→ ${h(W.agents[e.to].n)} · ${h(e.label)}</small>`).join('')}</div></div>
-  <div class="sec"><h3>Where it operates</h3><small class="muted">${h(a.places.map(p=>W.placeIdx[p]?.name).filter(Boolean).slice(0,6).join(', '))}</small></div>`;
-}
-function chainHTML(W,chain){return `<ul class="chain">${chain.map((c,j)=>{if(c.type==='a'){const a=W.agents[c.i];return `<li><i></i><span><b>${h(a.n)}</b> ${arrow(c.x)} ${h(a.m.toLowerCase())} ${fmtO(c.x)} at T${c.t}${c.edge?`<small>via ${h(c.edge.label.toLowerCase())}</small>`:''}</span></li>`}
-  const s=c.type==='s'?W.signals[c.c[1]]:null;return `<li class="src"><i></i><span><b>${h(srcName(W,c.c))}</b>${s?`<small>${s.state} · ${s.src} · ${h(s.places.map(p=>W.placeIdx[p]?.name).filter(Boolean).join(', '))} · ${s.time||'observed '+s.freshness+' days ago'} · confidence ${s.conf.toFixed(2)}</small>`:c.type==='e'?'<small>Your intervention</small>':c.type==='as'?'<small>Assumption introduced because evidence is incomplete</small>':'<small>Agent action during the simulation</small>'}</span></li>`}).join('')}</ul>`}
-function spark(vals,w=200,hh=40){const mx=Math.max(.01,...vals);const pts=vals.map((v,i)=>[i/(vals.length-1)*(w-8)+4,hh-6-(v/mx)*(hh-14)]);return `<svg class="spark" width="${w}" height="${hh}" viewBox="0 0 ${w} ${hh}"><polyline fill="none" stroke="#80AADC" stroke-width="1.6" points="${pts.map(p=>p.join(',')).join(' ')}"/>${pts.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?2.6:1.6}" fill="${i===pts.length-1?'#F4F4F4':'#80AADC'}"/>`).join('')}${['Apr','May','Jun','Jul','Aug','Sep'].map((m,i)=>`<text x="${pts[i][0]}" y="${hh-0}" font-size="8" fill="#8F9DC2" text-anchor="middle">${m}</text>`).join('')}</svg>`}
-function inspectSignal(k){
-  const W=S.W,s=W.signals[k];const down=new Set();s.tg.forEach(([ai])=>W.agents[ai].outE.forEach(e=>down.add(W.agents[e.to].n)));
-  const row=(a,b)=>`<dt>${a}</dt><dd>${b}</dd>`;
-  $('#right').innerHTML=`<div class="sec">${backBtn()}<div class="insp-h"><div><span class="label">Signal</span><h3>${h(s.title)}</h3></div><button class="btn sm" data-close aria-label="Close">×</button></div>
-   <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="life ${s.life}">${s.life}</span><span class="st ${s.state}">${s.state}</span>${s.live?'<span class="chip">Live</span>':''}</div>
-   ${s.client?'<span class="private">Your company data. It remains private, protected and under your control.</span>':''}</div>
-  <div class="sec"><h3>Properties</h3><dl class="props">
-   ${row('Strength',s.strength.toFixed(2))}${row('Direction',s.dir==='↑'?'Increasing':s.dir==='↓'?'Decreasing':'Steady')}${row('Geographic reach',`${s.places.length} location${s.places.length>1?'s':''}: ${h(s.places.map(p=>W.placeIdx[p]?.name).filter(Boolean).join(', '))}`)}
-   ${row('Duration',`Observed for ${s.duration} weeks`)}${row('Freshness',`Last observed ${s.freshness} day${s.freshness>1?'s':''} ago`)}${row('Confidence',`${s.conf.toFixed(2)} · ${confWord(s.conf)}`)}
-   ${row('Evidence quality',h(s.quality))}${row('Velocity',`${s.velocity>=0?'+':''}${s.velocity.toFixed(3)} per week`)}${row('Frequency',`${s.frequency} observation${s.frequency>1?'s':''}`)}
-   ${row('Persistence',s.persistence)}${row('Scope',h(s.scope))}${row('Affected entities',h(s.tg.map(x=>W.agents[x[0]].n).join(', ')))}
-   ${row('Relationships',h([...down].join(', ')||'None'))}${row('Contradictions',s.contradictions?`${s.contradictions}: “${h(W.signals.find(x=>x.id===s.contraWith)?.title||'')}”`:'None found')}${row('Source',h(s.src))}</dl></div>
-  <div class="sec"><h3>Last six months</h3>${spark(s.hist)}</div>
-  <div class="sec"><label class="tog"><input type="checkbox" data-sigtoggle="${k}" ${s.on?'checked':''}>Active in simulation</label><small class="muted">Switch it off to see how the market behaves without it.</small></div>`;
-}
-function inspectPlace(g,pid){
-  const p=profileOf(g),W=S.W;const name=pid&&W.placeIdx[pid]?W.placeIdx[pid].name:geoLabel(g);const same=JSON.stringify(g)===JSON.stringify(W.geo);
-  $('#right').innerHTML=`<div class="sec">${backBtn()}<div class="insp-h"><div><span class="label">Location · ${g.level}</span><h3>${h(name)}</h3></div><button class="btn sm" data-close aria-label="Close">×</button></div></div>
-  <div class="sec"><h3>Location profile</h3><div class="bars">${PROFILE_KEYS.map(k=>`<div class="bar"><span>${PROFILE_LABEL[k]}</span><span class="mono num" style="text-align:right">${p[k].toFixed(2)}</span><div class="tr"><span style="width:${p[k]*100}%"></span></div></div>`).join('')}</div>
-  <small class="muted">The profile changes how agents behave here: price sensitivity follows income, delivery costs follow infrastructure, competitor response follows competitive intensity.${p.evidence<.4?' Evidence here is limited, so treat results as hypotheses.':''}</small></div>
-  <div class="sec" style="display:flex;gap:8px;flex-wrap:wrap">${same?'<small class="muted">This is the location being simulated.</small>':`<button class="btn primary" data-simhere='${JSON.stringify(g)}'>Simulate here</button>`}<button class="btn" data-zoom='${JSON.stringify(g)}'>Zoom here</button></div>`;
-}
-function openPlace(g){S.sel={type:'place',g};renderRight()}
-function renderWhy(){
-  const W=S.W,rep=curRep(),t=Math.max(1,stepIdx());S.playing=false;renderPlayBtn();
-  const mv=W.agents.map((a,i)=>({i,d:rep.X[t][i]-rep.X[t-1][i]})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,3);
-  const outChain=trace(W,rep,W.out,t);
-  $('#right').innerHTML=`<div class="sec">${backBtn()}<div class="insp-h"><div><span class="label">Paused at T${t} · ${h(stepLabel(t))}</span><h3>Why did this happen?</h3></div><button class="btn sm" data-close aria-label="Close">×</button></div>
-   <small class="muted">Each chain follows the strongest contribution back to the evidence that started it.</small></div>
-   <div class="sec"><h3>${h(W.agents[W.out].n)}, the tracked outcome</h3>${chainHTML(W,outChain)}</div>
-   ${mv.filter(m=>m.i!==W.out&&Math.abs(m.d)>.005).map(m=>`<div class="sec"><h3>${h(W.agents[m.i].n)} moved ${arrow(m.d)} ${Math.abs(m.d*30).toFixed(1)} pts</h3>${chainHTML(W,trace(W,rep,m.i,t))}</div>`).join('')}
-   ${rep.acts.filter(a=>a.t<=t).length?`<div class="sec"><h3>Turning points so far</h3>${rep.acts.filter(a=>a.t<=t).map(a=>`<div class="pattern"><i>◆</i><span>T${a.t}: ${h(a.text)}</span></div>`).join('')}</div>`:''}`;
-}
-
-/* ---------- Timeline ---------- */
-function renderTimeline(){
-  $('#ticks').innerHTML=Array.from({length:STEPS+1},(_,t)=>`<span data-t="${t}">T${t}</span>`).join('');
-  $('#phases').innerHTML=PHASES.map(p=>`<div data-ph="${p[1].join(',')}">${p[0]}</div>`).join('');
-  $('#pathChips').innerHTML='<span class="label">Possible paths</span>'+S.mc.paths.slice().sort((a,b)=>a.id.localeCompare(b.id)).map(p=>`<button class="pchip" data-path="${p.id}" aria-pressed="${p.id===S.path}"><b>${p.id}</b> ${Math.round(p.prob*100)}% · ${h(p.title)}</button>`).join('');
-  renderTimelineState();
-}
-function renderTimelineState(){if(!S.mc)return;const t=stepIdx();
+function stepWhen(t){const d=S.spec.horizon/STEPS;return t===0?'Now':`${S.spec.stepUnit==='Mo'?'Month':'Week'} ${+(t*d).toFixed(1)}`}
+function renderTicks(){$('#ticks').innerHTML=Array.from({length:STEPS+1},(_,t)=>`<span data-t="${t}">${t===0?'Now':stepWhen(t).replace('Week ','W').replace('Month ','M')}</span>`).join('')}
+function renderPlay(){const b=$('#bPlay');b.textContent=S.playing?'❚❚':'▶';b.setAttribute('aria-label',S.playing?'Pause':'Play')}
+function renderStep(){
+  if(!S.mc)return;const t=stepIdx(),W=S.W,rep=curRep();
   $$('#ticks span').forEach(s=>s.classList.toggle('on',+s.dataset.t===t));
-  $$('#phases div').forEach(d=>{const ts=d.dataset.ph.split(',').map(Number);d.classList.toggle('on',ts.includes(t));d.classList.toggle('done',Math.max(...ts)<t)});
-  $('#stepNow').innerHTML=`T${t} · ${STEP_NAMES[t]}<small>${h(stepLabel(t))} · Path ${S.path}</small>`;
-  if(S.tab==='summary'||S.tab==='futures'){}
-  if(!S.sel||S.sel.type==='agent')renderLeftValues();
-}
-function renderLeftValues(){const rep=curRep();if(!rep)return;$$('#left [data-agent]').forEach(b=>{const i=+b.dataset.agent,a=S.W.agents[i],x=xAt(rep,i,S.tau);const v=b.querySelector('.v');if(v){v.textContent=S.tau>0?fmtO(x):'';v.className='v '+(adverse(a,x)?'pr':'up')}})}
-function renderPlayBtn(){const b=$('#bPlay');b.textContent=S.playing?'❚❚':'▶';b.setAttribute('aria-label',S.playing?'Pause':'Play')}
-
-/* ---------- Composer ---------- */
-function renderComposer(){
-  const W=S.W;$('#evActive').innerHTML=W.events.length?W.events.map(e=>`<span class="ev act">${h(e.label)} <span class="src">${e.src==='question'?'from question':e.src}</span><button data-rmev="${h(e.id)}" aria-label="Remove ${h(e.label)}">×</button></span>`).join(''):'<span class="muted" style="font-size:12px">No intervention. The market moves under current signals.</span>';
-  $('#evPalette').innerHTML='<span class="label">Add an event</span>'+COMPOSER.map(([k,a])=>`<button class="ev" draggable="true" data-addev="${k}" data-arg="${a==null?'':a}">${h(EVENTS[k].label(a))}</button>`).join('');
-}
-function addComposerEvent(key,arg){
-  const n0=S.W.agents.length;const ev=addEvent(S.W,[key,arg===''||arg==null?undefined:+arg],'composer');
-  if(!ev){toast('That event has no counterpart in this market.');return}
-  const added=S.W.agents.slice(n0).map(a=>a.n);
-  remember('Event added',`${h(ev.label)}${added.length?`. New agents created: ${h(added.join(', '))}`:''}.`);
-  toast(added.length?`${ev.label} added. The world grew: ${added.join(', ')}`:`${ev.label} added`);
-  S.tau=0;simulateNow({quiet:true});S.playing=true;renderPlayBtn();
+  $('#stepLbl').innerHTML=`${STEP_NAMES[t]}<small>${stepWhen(t)}</small>`;
+  if(t===0){$('#stepNote').innerHTML=`${W.signals.filter(s=>s.on).length} signals are active in the market. Press play to watch the agents respond.`;return}
+  const mv=W.agents.map((a,i)=>({a,i,d:rep.X[t][i]-rep.X[t-1][i]})).filter(m=>Math.abs(m.d)>.01).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,2);
+  const acts=rep.acts.filter(a=>a.t===t).map(a=>`<b>Turning point:</b> ${h(a.text)}.`);
+  const parts=mv.map(m=>{const top=rep.C[t][m.i].filter(c=>c[0]!=='self').sort((a,b)=>Math.abs(b[2])-Math.abs(a[2]))[0];return `<b>${h(m.a.n)}</b> <span class="${adverse(m.a,m.d)?'pr':'up'}">${arrow(m.d)}</span> ${h(m.a.m.toLowerCase())}${top?`, driven by ${h(srcName(W,top).toLowerCase())}`:''}`});
+  $('#stepNote').innerHTML=[...acts,parts.join(' · ')].filter(Boolean).join(' ')||'The market holds steady this step.';
 }
 
-/* ---------- Deck ---------- */
-function switchTab(t){S.tab=t;$$('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));['summary','futures','compare','investigate','memory'].forEach(x=>$('#tp-'+x).hidden=x!==t);renderDeck()}
-function renderDeck(){if(!S.mc)return;({summary:renderSummary,futures:renderFutures,compare:renderCompare,investigate:renderInvestigate,memory:renderMemory})[S.tab]()}
-function ensureSens(){if(!S.sens)S.sens=sensitivity(S.W,50);return S.sens}
+/* ---------- Scenario ---------- */
+function renderScenario(){
+  const W=S.W;
+  $('#scenario').innerHTML=`<span class="label">Scenario</span>`+(W.events.length?W.events.map(e=>`<span class="chip">${h(e.label)}<button data-rmev="${h(e.id)}" aria-label="Remove ${h(e.label)}">×</button></span>`).join(''):'<span class="muted" style="font-size:12.5px">Current signals only</span>')+
+  `<select id="addEv" aria-label="Add an event"><option value="">+ Add an event</option>${COMPOSER.map(([k,a])=>`<option value="${k}|${a==null?'':a}">${h(EVENTS[k].label(a))}</option>`).join('')}</select>`;
+}
+
+/* ---------- Side column ---------- */
+function renderSide(){
+  const W=S.W,mc=S.mc;if(!mc)return;const out=W.agents[W.out],best=mc.paths.slice().sort((a,b)=>b.prob-a.prob)[0];
+  const sens=ensureSens(),gap=sens.find(s=>!s.a.verified),st=gap?S.inv[gap.a.id]:null;
+  const strategies=(SECTORS[S.spec.sector]||SECTORS.generic).strategies.map(s=>s[0]);
+  let html=S.detail?detailHTML():'';
+  if(S.rank)html+=`<div class="blk"><h3>Locations compared</h3><div>${S.rank.map((r,i)=>`<button class="rk ${i===S.rankSel?'sel':''}" data-rank="${i}"><span class="n">${i+1}</span><span>${h(r.label)}${r.thin?' <span class="muted" style="font-size:11.5px">· limited evidence</span>':''}</span><span class="v">${fmtO(r.mean)}</span></button>`).join('')}</div><span class="muted" style="font-size:12px">Showing ${h(S.rank[S.rankSel].label)}. Select another to load it.</span></div>`;
+  html+=`<div class="blk"><span class="label">${h(out.n)} · ${h(out.m)}</span><span class="big num">${fmtO(mc.p50)}</span>
+   <span class="muted" style="font-size:13px">${mc.eff?'Likely effect after':'Likely change after'} ${S.spec.horizon} ${S.spec.stepUnit==='Mo'?'months':'weeks'}${mc.eff?', compared with doing nothing':''}. Most runs fall between ${fmtO(mc.p10)} and ${fmtO(mc.p90)}.</span>${miniChart(mc)}</div>`;
+  html+=`<div class="blk"><h3>How it could play out</h3><div class="paths">${mc.paths.slice().sort((a,b)=>b.prob-a.prob).map(p=>`<button class="prow ${p.id===S.path?'sel':''}" data-path="${p.id}"><span class="id">${p.id}</span><span class="t">${h(p.title)}</span><span class="pct">${Math.round(p.prob*100)}%</span><span class="bar"><span style="width:${Math.round(p.prob*100)}%"></span></span></button>`).join('')}</div><span class="muted" style="font-size:12px">Share of ${mc.N} simulated runs. Select one to play it. These are possibilities, not predictions.</span></div>`;
+  html+=`<div class="blk"><h3>Your decision</h3><div class="opts">${[...strategies,'Investigate first','Do not proceed'].map(d=>`<button data-decide="${h(d)}" class="${S.decision===d?'chosen':''}">${h(d)}</button>`).join('')}</div><span class="muted" style="font-size:12px">${S.decision?`Recorded in Market Memory: ${h(S.decision)}.`:'Verisavo supports the decision. You make it.'}</span></div>`;
+  $('#side').innerHTML=html;
+  let bl='';
+  bl+=`<div class="blk"><h3>What happened</h3><p style="margin:0;font-size:13.5px">${h(narrative(W,curPath()))}</p></div>`;
+  if(gap)bl+=`<div class="blk"><h3>Biggest unknown</h3><p style="margin:0;font-size:13.5px">${h(gap.a.unknown)}</p><span class="muted" style="font-size:12.5px">It could move the result between ${fmtO(Math.min(gap.lo,gap.hi))} and ${fmtO(Math.max(gap.lo,gap.hi))}. Verisavo would check it with: ${h(gap.a.method.toLowerCase())}, ${gap.a.n} observations.</span>
+    ${st?`<ul class="prog">${INV.map((p,i)=>`<li class="${i<st.step||st.done?'done':i===st.step?'now':''}">${i<st.step||st.done?'✓':i===st.step?'›':'·'} ${p}${i===1&&st.step>=1?` <span class="mono">${Math.min(gap.a.n,st.recv||0)}/${gap.a.n}</span>`:''}</li>`).join('')}</ul>`:`<button class="btn" data-investigate="${gap.a.id}" style="justify-self:start">Investigate this</button>`}</div>`;
+  const doneInv=Object.entries(S.inv).filter(([,v])=>v.done);
+  if(doneInv.length)bl+=`<div class="blk"><h3>Verified since you asked</h3>${doneInv.map(([id,v])=>{const a=W.assumptions.find(x=>x.id===id);return a?`<div class="finding"><b>${h(a.label)}</b><span>${h(a.finding.text)}</span><span class="muted">${h(v.change)}</span></div>`:''}).join('')}</div>`;
+  $('#below').innerHTML=bl;
+}
+function miniChart(mc){
+  const b=mc.band,w=320,hh=84,all=[...b.flat(),0],mn=Math.min(...all),mx=Math.max(...all),sy=v=>hh-14-(v-mn)/((mx-mn)||1)*(hh-24),sx=t=>4+t/STEPS*(w-12);
+  const area=b.map((q,t)=>`${sx(t)},${sy(q[2])}`).join(' ')+' '+b.slice().reverse().map((q,i)=>`${sx(STEPS-i)},${sy(q[0])}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${hh}" width="100%" role="img" aria-label="Outcome over time with range"><line x1="4" x2="${w-8}" y1="${sy(0)}" y2="${sy(0)}" stroke="#CCDDF1" stroke-dasharray="3 3"/><polygon points="${area}" fill="#E3EBF8"/><polyline fill="none" stroke="#4362B2" stroke-width="2" points="${b.map((q,t)=>`${sx(t)},${sy(q[1])}`).join(' ')}"/><circle cx="${sx(STEPS)}" cy="${sy(b[STEPS][1])}" r="3" fill="#1F273F"/><text x="4" y="${hh-1}" font-size="9.5" fill="#8A94AE">Now</text><text x="${w-8}" y="${hh-1}" font-size="9.5" fill="#8A94AE" text-anchor="end">${stepWhen(STEPS)}</text></svg>`;
+}
 function narrative(W,p){
   const rep=p.rep,seen=new Set(),groups=[];
-  const phrase=(i,x)=>{const a=W.agents[i];const v=`${x>0?'up':'down'} ${fmtO(x).replace(/^[+−]/,'')}`;return a.k==='actor'?`${a.m.toLowerCase()} for ${a.n.toLowerCase()} ${v}`:`${a.n.toLowerCase()} ${v}`};
-  for(let t=1;t<=STEPS&&groups.length<3;t++){const items=[];W.agents.forEach((a,i)=>{if(seen.has(i)||i===W.out)return;if(Math.abs(rep.X[t][i])>.09){seen.add(i);items.push(phrase(i,rep.X[t][i]))}});
-    const acts=rep.acts.filter(a=>a.t===t).map(a=>a.text.toLowerCase());
-    if(items.length||acts.length)groups.push({t,items:items.slice(0,3),acts})}
+  const ph=(i,x)=>{const a=W.agents[i],v=`${x>0?'up':'down'} ${fmtO(x).replace(/^[+−]/,'')}`;return a.k==='actor'?`${a.m.toLowerCase()} for ${a.n.toLowerCase()} ${v}`:`${a.n.toLowerCase()} ${v}`};
+  for(let t=1;t<=STEPS&&groups.length<2;t++){const items=[];W.agents.forEach((a,i)=>{if(seen.has(i)||i===W.out)return;if(Math.abs(rep.X[t][i])>.09){seen.add(i);items.push(ph(i,rep.X[t][i]))}});const acts=rep.acts.filter(a=>a.t===t).map(a=>a.text.toLowerCase());if(items.length||acts.length)groups.push({t,items:items.slice(0,2),acts})}
   const join=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
-  let s=groups.map(g=>{let x=`At T${g.t}, ${join(g.items)}`;if(g.acts.length)x+=(g.items.length?'; then ':'')+join(g.acts);return x+'.'}).join(' ').replace(/At T(\d), ;/,'At T$1,');
-  const out=W.agents[W.out];
-  s+=` ${out.n} ends the period with ${out.m.toLowerCase()} ${fmtO(p.mean)}${S.mc.eff?' compared with the market continuing as it is':''}.`;
-  return s.trim().replace(/^./,c=>c.toUpperCase());
+  let s=groups.map(g=>`By ${stepWhen(g.t).toLowerCase()}, ${join(g.items)}${g.acts.length?(g.items.length?'; then ':'')+join(g.acts):''}.`).join(' ');
+  return (s+` On this path, ${W.agents[W.out].n.toLowerCase()} ends ${fmtO(p.mean)}${S.mc.eff?' versus doing nothing':''}.`).trim();
 }
-function renderSummary(){
-  const W=S.W,mc=S.mc,best=mc.paths.slice().sort((a,b)=>b.prob-a.prob)[0],out=W.agents[W.out];const sens=ensureSens();
-  const edges=topEdges(W,best.rep).slice(0,3),sigs=strongestSignals(W,best.rep).slice(0,4),keys=keyAgents(W,best.rep).slice(0,3);
-  const risks=mc.paths.filter(p=>p.id!==best.id&&(p.id==='C'||p.id==='D'||p.prob>.1));
-  const unv=W.assumptions.filter(a=>!a.verified);const topGap=sens.find(s=>!s.a.verified);
-  const strategies=(SECTORS[S.spec.sector]||SECTORS.generic).strategies;
-  const rankBlock=S.rank?`<div class="srow"><span class="label">Location ranking</span><div><p class="muted" style="margin-bottom:6px">${h(S.spec.q)} Ranked by simulated ${h(out.m.toLowerCase())}${mc.eff?' effect':''}. Locations with limited evidence are flagged; treat them as hypotheses to investigate.</p><div class="rank-list">${S.rank.map((r,i)=>{const mx=Math.max(...S.rank.map(x=>x.mean)),mn=Math.min(0,...S.rank.map(x=>x.mean));return `<button class="rk ${i===S.rankSel?'sel':''}" data-rank="${i}"><span class="n">${i+1}</span><span><b style="font-weight:500">${h(r.label)}</b> <span class="muted">${h(r.sub)}</span>${r.thin?' <span class="chip">limited evidence</span>':''}</span><span class="bar-s"><span style="width:${((r.mean-mn)/((mx-mn)||1)*100).toFixed(0)}%"></span></span><span class="mono num" style="text-align:right">${fmtO(r.mean)}</span></button>`}).join('')}</div><small class="muted">Select a location to load its simulation. Now showing ${h(S.rank[S.rankSel].label)}.</small></div></div>`:'';
-  $('#tp-summary').innerHTML=`<div class="sum"><div>
-   ${rankBlock}
-   <div class="srow"><span class="label">What happened</span><p>${h(narrative(W,best))}</p></div>
-   <div class="srow"><span class="label">Most supported path</span><div><p class="headline">Path ${best.id}: ${h(best.title)}</p><p class="muted">${Math.round(best.prob*100)}% of ${mc.N} runs. Most supported is not the same as certain.</p></div></div>
-   <div class="srow"><span class="label">Why</span><ul>${edges.map(e=>`<li>${h(W.agents[e.e.from].n)} → ${h(W.agents[e.e.to].n)} <span class="muted">${h(e.e.label.toLowerCase())}</span></li>`).join('')}</ul></div>
-   <div class="srow"><span class="label">Strongest signals</span><ul>${sigs.map(x=>{const s=W.signals[x.k];return `<li>${h(s.title)} <span class="muted">${s.state}, ${s.src}, confidence ${s.conf.toFixed(2)}</span></li>`}).join('')||'<li class="muted">Signals played a minor role; relationships and assumptions drove the result.</li>'}</ul></div>
-   <div class="srow"><span class="label">Key agents</span><ul>${keys.map(k=>`<li>${h(W.agents[k.i].n)} <span class="muted">${h(W.agents[k.i].m.toLowerCase())}</span></li>`).join('')}</ul></div>
-   <div class="srow"><span class="label">Turning points</span><ul>${best.turning.length?best.turning.map(a=>`<li>T${a.t}: ${h(a.text)}</li>`).join(''):'<li class="muted">No agent changed strategy on this path.</li>'}</ul></div>
-   <div class="srow"><span class="label">Risks</span><ul>${risks.map(p=>`<li>${h(p.title)} <span class="muted">${Math.round(p.prob*100)}% of runs, ${out.m.toLowerCase()} ${fmtO(p.mean)}</span></li>`).join('')||'<li class="muted">No alternative path above 10% of runs.</li>'}</ul></div>
-   <div class="srow"><span class="label">Assumptions</span><ul>${W.assumptions.map(a=>`<li>${h(a.label)}: ${a.mean.toFixed(2)} ± ${a.sd.toFixed(2)} <span class="st ${a.verified?'Inference':'Assumption'}">${a.verified?'Verified':'Assumption'}</span></li>`).join('')}${S.spec.notes.map(n=>`<li class="muted">${h(n)}</li>`).join('')}</ul></div>
-   <div class="srow"><span class="label">Unknowns</span><ul>${unv.map(a=>`<li>${h(a.unknown)} <span class="st Unknown">Unknown</span></li>`).join('')}<li class="muted">Effects beyond ${S.spec.horizon} ${S.spec.stepUnit==='Mo'?'months':'weeks'} are outside this simulation.</li></ul></div>
-   <div class="srow"><span class="label">What to investigate</span><p>${topGap?`<b>${h(topGap.a.label)}.</b> It moves the outcome between ${fmtO(topGap.lo)} and ${fmtO(topGap.hi)}. ${h(topGap.a.method)} would narrow it. <button class="btn sm" data-tabgo="investigate">Investigate</button>`:'All introduced assumptions have been investigated. Re-run as new signals arrive.'}</p></div>
-   <div class="srow"><span class="label">Decision options</span><ul>${strategies.map(s=>`<li>${h(s[0])}</li>`).join('')}${topGap?`<li>Investigate ${h(topGap.a.label.toLowerCase())} before committing</li>`:''}<li>Monitor the strongest signals and re-run when they change</li></ul><p style="margin-top:8px"><button class="btn sm" data-cmpint>Compare these options</button></p></div>
-  </div><aside style="display:grid;gap:14px;align-content:start">
-   <div class="outcome-card"><span class="label">${h(out.n)} · ${h(out.m)}</span><span class="big num">${fmtO(mc.p50)}</span>
-    <span class="muted">${mc.eff?`Median effect by T6 compared with the market continuing as it is. Without the intervention, ${h(out.m.toLowerCase())} would move ${fmtO(mc.baseMean)}.`:'Median change by T6 under current signals.'}</span>
-    <span class="muted num">Middle 80% of runs: ${fmtO(mc.p10)} to ${fmtO(mc.p90)}</span>
-    ${outcomeChart(mc,W)}
-    <span class="muted">Evidence coverage ${W.prof.evidence.toFixed(2)} · ${W.signals.filter(s=>s.state==='Fact').length} facts, ${W.signals.filter(s=>s.state==='Inference').length} inferences, ${W.signals.filter(s=>s.state==='Hypothesis').length} hypotheses, ${unv.length} assumptions</span></div>
-   <div class="decide"><h3>Your decision</h3><p>Verisavo has set out plausible paths, the evidence behind them and what remains unknown. The decision is yours, and it is recorded in Market Memory with the evidence as it stood.</p>
-    <div class="opts">${[...strategies.map(s=>s[0]),'Investigate further first','Do not proceed'].map(d=>`<button data-decide="${h(d)}" class="${S.decision===d?'chosen':''}">${h(d)}</button>`).join('')}</div>
-    <label for="decNote" style="font-size:12px;color:#3a4566">Note for your team (optional)</label><textarea id="decNote" placeholder="What tipped the decision?"></textarea></div>
-  </aside></div>`;
+function ensureSens(){if(!S.sens)S.sens=sensitivity(S.W,40);return S.sens}
+function detailHTML(){
+  const W=S.W,d=S.detail,rep=curRep(),t=Math.max(1,stepIdx());
+  if(d.type==='agent'){const i=d.i,a=W.agents[i],x=rep.X[t][i],role=ROLES[a.id];
+    const cc=rep.C[t][i].filter(c=>c[0]!=='self').sort((p,q)=>Math.abs(q[2])-Math.abs(p[2]));
+    const sigs=W.signals.filter(s=>s.tg.some(g=>g[0]===i)),conf=sigs.length?sigs.reduce((s,x)=>s+x.conf,0)/sigs.length:W.prof.evidence;
+    const react=Math.abs(x)>.05?((x>0?role.up:role.dn)||`${a.m} ${x>0?'increases':'decreases'}`):'No change in behaviour yet.';
+    return `<div class="detail"><div class="detail-h"><div><span class="label">${a.k==='actor'?'Market agent':a.k==='condition'?'Market condition':'Outside force'} · ${stepWhen(t)}</span><h3>${h(a.n)}</h3></div><button class="x" data-close aria-label="Close">×</button></div>
+     <dl class="kv"><dt>Now</dt><dd>${h(a.m)} <b class="${adverse(a,x)?'pr':'up'}">${fmtO(x)}</b></dd><dt>Main pressure</dt><dd>${cc[0]?h(srcName(W,cc[0])):'None yet'}</dd><dt>Likely reaction</dt><dd>${h(react)}</dd><dt>Evidence</dt><dd>${sigs.length?`${sigs.reduce((s,x)=>s+x.frequency,0)} observations, ${confWord(conf).toLowerCase()} confidence`:'Follows its relationships and assumptions'}</dd></dl>
+     <span class="label">Why</span>${chainHTML(W,trace(W,rep,i,t))}</div>`}
+  if(d.type==='why'){const ch=trace(W,rep,W.out,t);return `<div class="detail"><div class="detail-h"><div><span class="label">${stepWhen(t)}</span><h3>Why ${h(W.agents[W.out].n.toLowerCase())} moved</h3></div><button class="x" data-close aria-label="Close">×</button></div>${chainHTML(W,ch)}<span class="muted" style="font-size:12px">Each line follows the strongest cause back to the evidence that started it. Tap an agent for its own chain.</span></div>`}
+  const s=W.signals[d.k];
+  return `<div class="detail"><div class="detail-h"><div><span class="label">Signal</span><h3>${h(s.title)}</h3></div><button class="x" data-close aria-label="Close">×</button></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="st ${s.state}">${s.state}</span><span class="st Inference" style="background:var(--tint);color:var(--muted)">${s.life}</span></div>
+   <dl class="kv"><dt>Source</dt><dd>${h(s.src)}${s.client?' · your private data':''}</dd><dt>Where</dt><dd>${h(s.places.map(p=>W.placeIdx[p]?.name).filter(Boolean).join(', '))}</dd><dt>Confidence</dt><dd>${s.conf.toFixed(2)} · ${confWord(s.conf)}</dd><dt>Last seen</dt><dd>${s.freshness} day${s.freshness>1?'s':''} ago, ${s.frequency} observations</dd><dt>Affects</dt><dd>${h(s.tg.map(x=>W.agents[x[0]].n).join(', '))}</dd>${s.contradictions?`<dt>Contradicted by</dt><dd>${h(W.signals.find(x=>x.id===s.contraWith)?.title||'')}</dd>`:''}</dl>
+   <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" data-sigtoggle="${d.k}" ${s.on?'checked':''}> Include this signal</label></div>`;
 }
-function outcomeChart(mc,W,w=300,hh=110,shared){
-  const b=mc.band,all=shared||[...b.flat(),0];const mn=Math.min(...all),mx=Math.max(...all),sy=v=>hh-16-(v-mn)/((mx-mn)||1)*(hh-28),sx=t=>22+t/STEPS*(w-30);
-  const area=b.map((q,t)=>`${sx(t)},${sy(q[2])}`).join(' ')+' '+b.slice().reverse().map((q,i)=>`${sx(STEPS-i)},${sy(q[0])}`).join(' ');
-  return `<svg viewBox="0 0 ${w} ${hh}" width="100%" role="img" aria-label="Outcome trajectory with range across runs"><line x1="22" x2="${w-8}" y1="${sy(0)}" y2="${sy(0)}" stroke="#465488" stroke-dasharray="3 3"/><polygon points="${area}" fill="rgba(97,141,208,.25)"/><polyline fill="none" stroke="#A6BFE5" stroke-width="2" points="${b.map((q,t)=>`${sx(t)},${sy(q[1])}`).join(' ')}"/><circle cx="${sx(STEPS)}" cy="${sy(b[STEPS][1])}" r="3" fill="#F4F4F4"/>${[0,2,4,6].map(t=>`<text x="${sx(t)}" y="${hh-3}" font-size="9" fill="#8F9DC2" text-anchor="middle" font-family="IBM Plex Mono, monospace">T${t}</text>`).join('')}<text x="2" y="${sy(0)+3}" font-size="9" fill="#8F9DC2" font-family="IBM Plex Mono, monospace">0</text></svg>`;
-}
-function renderFutures(){
-  const W=S.W,mc=S.mc,ps=mc.paths.slice().sort((a,b)=>a.id.localeCompare(b.id));
-  const n=ps.length,H=Math.max(220,n*92),bx=470;
-  const dec=W.events.length?W.events.map(e=>e.label).join(' + '):'Current signals';
-  const tree=`<svg class="tree" viewBox="0 0 860 ${H}" width="100%" style="min-width:640px" role="img" aria-label="Scenario tree">
-   <rect class="tn" x="10" y="${H/2-28}" width="150" height="56" rx="8"/><text x="24" y="${H/2-6}" font-size="12" fill="#A6BFE5">Current market</text><text x="24" y="${H/2+12}" font-size="12.5" font-weight="600">${h(geoShort(W.geo))}</text>
-   <line x1="160" y1="${H/2}" x2="210" y2="${H/2}" stroke="#465488" stroke-width="2"/>
-   <rect class="tn" x="210" y="${H/2-28}" width="190" height="56" rx="8"/><text x="224" y="${H/2-6}" font-size="12" fill="#A6BFE5">Decision</text><text x="224" y="${H/2+12}" font-size="12.5" font-weight="600">${h(dec.length>26?dec.slice(0,25)+'…':dec)}</text>
-   ${ps.map((p,i)=>{const y=(i+.5)*H/n;return `<path d="M400,${H/2} C440,${H/2} 430,${y} ${bx},${y}" fill="none" stroke="${p.id===S.path?'#F4F4F4':'#618DD0'}" stroke-width="${(1.5+p.prob*12).toFixed(1)}" opacity=".8"/>
-    <g class="br ${p.id===S.path?'sel':''}" data-path="${p.id}"><rect class="tn" x="${bx}" y="${y-32}" width="380" height="64" rx="8"/><text x="${bx+14}" y="${y-10}" font-size="12" fill="#A6BFE5">Path ${p.id} · ${Math.round(p.prob*100)}% of runs · ${fmtO(p.mean)}</text><text x="${bx+14}" y="${y+10}" font-size="13" font-weight="600">${h(p.title.length>48?p.title.slice(0,47)+'…':p.title)}</text><text x="${bx+14}" y="${y+25}" font-size="11" fill="#8F9DC2">${p.turning.length?'Turning point: T'+p.turning[0].t+' '+h(p.turning[0].text.toLowerCase().slice(0,44)):'No major turning point'}</text></g>`}).join('')}</svg>`;
-  $('#tp-futures').innerHTML=`<p class="intro">From the same starting conditions, agents interact differently across ${mc.N} runs. These are possible paths, grouped by what happened in them. They are not predictions. Select a path to play it in Market Motion.</p><div class="tree-wrap">${tree}</div>
-  <div class="branches">${ps.map(p=>`<article class="bcard ${p.id===S.path?'sel':''}"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span class="label">Path ${p.id}</span><span class="pct num">${Math.round(p.prob*100)}%</span></div><h4>${h(p.title)}</h4><p class="muted" style="margin:0;font-size:13px">${h(p.desc)}</p>
-   <div><span class="label">Key signals</span><ul>${p.keySignals.map(x=>`<li>${h(W.signals[x.k].title)}</li>`).join('')||'<li class="muted">Relationships, not signals, drove this path</li>'}</ul></div>
-   <div><span class="label">Critical assumptions</span><ul>${p.critical.map(c=>`<li>${h(c.a.label)} ${c.z>0?'higher':'lower'} than average (${c.pm.toFixed(2)})</li>`).join('')||'<li class="muted">None stand out</li>'}</ul></div>
-   <div><span class="label">Evidence quality</span><p style="margin:0;font-size:12.5px">${confWord(p.evidence)} (${p.evidence.toFixed(2)})</p></div>
-   <div><span class="label">Important unknowns</span><ul>${W.assumptions.filter(a=>!a.verified).slice(0,2).map(a=>`<li>${h(a.label)}</li>`).join('')||'<li class="muted">None open</li>'}</ul></div>
-   <div><span class="label">Turning points</span><ul>${p.turning.map(a=>`<li>T${a.t}: ${h(a.text)}</li>`).join('')||'<li class="muted">None</li>'}</ul></div>
-   <button class="btn sm" data-playpath="${p.id}">Play this path</button></article>`).join('')}</div>`;
-}
-function geoOptions(){const o=[];Object.entries(FEAT).forEach(([cid,f])=>{o.push([JSON.stringify(mkGeo('country',{cid})),CTRY[cid].name]);f.cityIds.forEach(id=>o.push([JSON.stringify(mkGeo('city',{city:id})),`  ${CITY[id].name}, ${CTRY[cid].name}`]))});return o}
-function renderCompare(){
-  const W=S.W,mode=S.cmpMode;
-  if(!S.cmp||S.cmp.mode!==mode||S.cmp.key!==W.seed+W.events.length){
-    if(mode==='geo'){const cur=W.geo;let alts=[];if(cur.level==='city'||cur.level==='district'){alts=FEAT[cur.cid].cityIds.filter(id=>id!==cur.city).slice(0,2).map(id=>mkGeo('city',{city:id}))}else if(cur.level==='country'){alts=Object.keys(FEAT).filter(c=>c!==cur.cid).slice(0,2).map(cid=>mkGeo('country',{cid}))}else alts=['566','404'].map(cid=>mkGeo('country',{cid}));
-      S.cmp={mode,key:W.seed+W.events.length,geos:[cur,...alts].slice(0,3),res:null}}
-    else S.cmp={mode,key:W.seed+W.events.length,res:null}}
-  if(!S.cmp.res)runCompare();
-  const res=S.cmp.res;const shared=[0,...res.flatMap(r=>r.mc.band.flat())];
-  const opts=geoOptions();
-  const head=`<div class="cmp-h"><div class="seg"><button data-cmpmode="geo" aria-pressed="${mode==='geo'}">Compare geography</button><button data-cmpmode="int" aria-pressed="${mode==='int'}">Compare interventions</button></div>
-   ${mode==='geo'?S.cmp.geos.map((g,i)=>`<label class="label" style="display:grid;gap:3px">Location ${i+1}<select data-cmpgeo="${i}">${opts.map(([v,l])=>`<option value='${v}' ${v===JSON.stringify(g)?'selected':''}>${h(l)}</option>`).join('')}${opts.some(o=>o[0]===JSON.stringify(g))?'':`<option value='${JSON.stringify(g)}' selected>${h(geoShort(g))}</option>`}</select></label>`).join(''):''}</div>`;
-  const intro=mode==='geo'?`<p class="intro">The same scenario (${h(W.events.map(e=>e.label).join(', ')||'current signals only')}) simulated in each location. Each market reacts differently because its evidence, infrastructure, competition, customers and distribution environment differ.</p>`:`<p class="intro">Alternative strategies simulated in ${h(geoLabel(W.geo))} under the same signals and assumptions. Each one changes agents, relationships, risks and possible outcomes in its own way.</p>`;
-  const mults=`<div class="mults">${res.map(r=>{const best=r.mc.paths.slice().sort((a,b)=>b.prob-a.prob)[0];return `<div class="mult"><h4>${h(r.name)}</h4><span class="big num" style="font-size:24px">${fmtO(r.mc.p50)}</span><span class="muted" style="font-size:12px">${h(r.W.agents[r.W.out].m)} by T6 · range ${fmtO(r.mc.p10)} to ${fmtO(r.mc.p90)}</span>${outcomeChart(r.mc,r.W,260,90,shared)}<span style="font-size:12.5px">Most supported: ${h(best.title)} (${Math.round(best.prob*100)}%)</span></div>`}).join('')}</div>`;
-  const rows=[['Median effect',r=>fmtO(r.mc.p50)],['Range (middle 80%)',r=>`${fmtO(r.mc.p10)} to ${fmtO(r.mc.p90)}`],['Most supported path',r=>{const b=r.mc.paths.slice().sort((a,c)=>c.prob-a.prob)[0];return `${h(b.title)} (${Math.round(b.prob*100)}%)`}],
-    ['Main risk',r=>{const c=r.mc.paths.filter(p=>p.id==='C'||p.id==='D').sort((a,b)=>b.prob-a.prob)[0];return c?`${h(c.title)} (${Math.round(c.prob*100)}%)`:'None above threshold'}],
-    ['Most affected agent',r=>{const k=keyAgents(r.W,r.mc.paths[0].rep)[0];return k?h(r.W.agents[k.i].n):'—'}],['Agents in this world',r=>r.W.agents.length],['Evidence coverage',r=>r.W.prof.evidence.toFixed(2)+(r.W.prof.evidence<.4?' (limited)':'')],['Top unknown',r=>h((r.W.assumptions[0]||{label:'—'}).label)]];
-  if(mode==='geo')rows.push(['Profile difference vs first',(r,i)=>i===0?'Reference':PROFILE_KEYS.filter(k=>k!=='evidence').map(k=>({k,d:r.W.prof[k]-res[0].W.prof[k]})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,2).map(x=>`${PROFILE_LABEL[x.k].toLowerCase()} ${x.d>0?'higher':'lower'}`).join(', ')]);
-  const table=`<div class="tbl"><table class="ct"><thead><tr><th></th>${res.map(r=>`<th>${h(r.name)}</th>`).join('')}</tr></thead><tbody>${rows.map(([l,f])=>`<tr><td>${l}</td>${res.map((r,i)=>`<td>${f(r,i)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  $('#tp-compare').innerHTML=head+intro+mults+table;
-}
-function runCompare(){
-  const W=S.W,spec=S.spec;const extra=W.events.filter(e=>e.src!=='question').map(e=>[e.key,e.arg]);
-  if(S.cmp.mode==='geo'){S.cmp.res=S.cmp.geos.map(g=>{const W2=buildWorld(spec,g);extra.forEach(e=>addEvent(W2,e,'composer'));W2.measure=W2.events.length?'effect':'level';return {name:geoShort(g),W:W2,mc:monteCarlo(W2,100)}})}
-  else{const strat=(SECTORS[spec.sector]||SECTORS.generic).strategies;S.cmp.res=[{name:'Your current scenario',W,mc:S.mc},...strat.map(([name,evs])=>{const W2=buildWorld({...spec,events:evs,mods:new Set(spec.mods)},W.geo);return {name,W:W2,mc:monteCarlo(W2,100)}})]}
-}
-const INV_STEPS=['Intelligence Gap identified','Verisavo designs the investigation','Existing sources searched','Ground-Level Intelligence requested','Evidence verified','Market Memory updated','Agents updated','Simulation re-runs'];
-function renderInvestigate(){
-  const W=S.W,sens=ensureSens();
-  $('#tp-investigate').innerHTML=`<p class="intro">When evidence cannot responsibly answer something that could change the outcome, the simulation still runs, but it introduces an assumption and shows how much that assumption moves the result. Investigating closes the loop: Ask → Simulate → Discover → Investigate → Verify → Learn → Simulate again. Fieldwork that takes days in deployment is compressed into seconds here.</p>
-  <div class="gaps">${sens.map(s=>{const a=s.a,st=S.inv[a.id];const lo=Math.min(s.lo,s.hi),hi=Math.max(s.lo,s.hi),span=Math.max(.3,...sens.map(x=>Math.max(Math.abs(x.lo),Math.abs(x.hi))))*2;
-    const pl=W.places.filter(p=>p.tags.includes(a.where==='markets'?'market':a.where==='routes'?'route':a.where==='rural'?'rural':a.where==='capital'?'capital':'hub')).slice(0,3).map(p=>p.name.replace(/ hub$/,''));
-    return `<article class="gap"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="st ${a.verified?'Inference':'Unknown'}">${a.verified?'Verified':'Intelligence gap'}</span><span class="label">${s.swing>.12?'High':s.swing>.05?'Medium':'Low'} impact</span></div>
-     <h4>${h(a.unknown)}</h4>
-     <p class="muted">Assumption introduced: ${h(a.label.toLowerCase())} = ${a.mean.toFixed(2)} ± ${a.sd.toFixed(2)}.</p>
-     <div class="swing"><span>Moves the outcome between <b class="mono">${fmtO(lo)}</b> and <b class="mono">${fmtO(hi)}</b></span><div class="tr"><span style="left:${(50+lo/span*100).toFixed(1)}%;width:${Math.max(1.5,(hi-lo)/span*100).toFixed(1)}%"></span></div></div>
-     <dl class="props"><dt>Method</dt><dd>${h(a.method)}</dd><dt>Where</dt><dd>${h(pl.join(', ')||geoShort(W.geo))}</dd><dt>Sample</dt><dd>${a.n} observations</dd><dt>Capture</dt><dd>${h(a.channels)}</dd></dl>
-     ${!st&&!a.verified?`<button class="btn sig" data-investigate="${a.id}">Investigate</button>`:''}
-     ${st?`<ul class="prog">${INV_STEPS.map((p,i)=>`<li class="${i<st.step?'done':i===st.step&&!st.done?'now':''}"><i>${i<st.step||st.done?'✓':i===st.step?'›':'·'}</i>${p}${i===2&&st.step>2?` <span class="muted">· ${h(st.existing)}</span>`:''}${i===3&&st.step>=3?` <span class="mono">${Math.min(a.n,st.recv||0)}/${a.n}</span>`:''}</li>`).join('')}</ul>`:''}
-     ${st&&st.done?`<div class="finding"><b>Verified finding</b><span>${h(a.finding.text)}</span><span class="muted">${h(st.change)}</span></div>`:''}</article>`}).join('')}</div>`;
-}
-async function investigate(id){
-  const W=S.W,a=W.assumptions.find(x=>x.id===id);if(!a||S.inv[id])return;
-  const before=S.mc,beforeBest=before.paths.slice().sort((x,y)=>y.prob-x.prob)[0];
-  const st=S.inv[id]={step:0,recv:0,existing:''};remember('Investigation',`Started: ${h(a.unknown)}`);
-  const tick=async(ms)=>{renderInvestigate();await sleep(ms)};
-  for(let i=0;i<INV_STEPS.length;i++){st.step=i;
-    if(i===2){st.existing=W.prof.evidence>=.7&&a.kind==='edge'?'partial answer found in existing sources':'not enough in existing sources';await tick(700)}
-    else if(i===3){for(let k=0;k<=a.n;k+=Math.max(1,Math.ceil(a.n/9))){st.recv=k;await tick(140)}st.recv=a.n}
-    else if(i===4){await tick(800)}
-    else if(i===6){a.mean=a.finding.mean;a.sd=a.finding.sd;a.verified=true;a.state='Inference';await tick(400)}
-    else await tick(450)}
-  st.step=INV_STEPS.length;simulateNow({quiet:true,keepPath:true});
-  const after=S.mc,afterBest=after.paths.slice().sort((x,y)=>y.prob-x.prob)[0];
-  st.done=true;st.change=`Most supported path: ${beforeBest.title} (${Math.round(beforeBest.prob*100)}%) → ${afterBest.title} (${Math.round(afterBest.prob*100)}%). Range ${fmtO(before.p10)} to ${fmtO(before.p90)} → ${fmtO(after.p10)} to ${fmtO(after.p90)}.`;
-  remember('Evidence verified',`${h(a.finding.text)} ${h(st.change)}`);
-  if(S.tab==='investigate')renderInvestigate();toast('Evidence verified. Agents updated and the simulation re-ran.');
-}
-function renderMemory(){
-  if(!S.W)return;
-  $('#tp-memory').innerHTML=`<p class="intro">Market Memory keeps what was known, what changed and which evidence changed it. Replay the last six months to see how this market reached its current state.</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button class="btn sig" data-replay>${S.replay?'Restart replay':'Replay the last six months'}</button>${S.replay?'<button class="btn" data-replayexit>Exit replay</button>':''}</div>
-  <div class="sum"><div><span class="label">How we got here</span><ul class="mem" style="margin-top:6px">${historyItems().map(m=>`<li><span class="t">${m[0]}</span><span class="k">${m[1]}</span><span>${m[2]}</span></li>`).join('')}</ul></div>
-  <div><span class="label">This session</span><ul class="mem" style="margin-top:6px">${S.memory.map(m=>`<li><span class="t">${m.t}</span><span class="k">${h(m.kind)}</span><span>${m.text}</span></li>`).join('')}</ul></div></div>`;
-}
-const MONTHS=['Apr 2026','May 2026','Jun 2026','Jul 2026','Aug 2026','Sep 2026'];
-function historyItems(){const W=S.W,out=[];W.signals.forEach(s=>{const f=s.hist.findIndex(v=>v>.02);if(f<0)return;out.push([MONTHS[f].slice(0,3),f===0?'Persisting':'First observed',`${h(s.title)} <span class="muted">(${s.src})</span>`]);
-  const pk=s.hist.indexOf(Math.max(...s.hist));if(s.pat==='falling')out.push([MONTHS[Math.min(5,pk+2)].slice(0,3),'Weakening',`${h(s.title)} began to fade`]);if(s.life==='contested')out.push(['Sep','Contradicted',`${h(s.title)} met contradictory evidence`])});
-  const order=m=>['Apr','May','Jun','Jul','Aug','Sep'].indexOf(m[0]);return out.sort((a,b)=>order(a)-order(b))}
-function startReplay(){S.playing=false;renderPlayBtn();S.replay={m:0,playing:true};
-  let bar=$('#replayBar');if(!bar){bar=document.createElement('div');bar.id='replayBar';bar.className='replaybar';$('#mapWrap').appendChild(bar)}
-  bar.innerHTML=`<b>Historical replay</b><span id="rpLbl" class="mono">Apr 2026</span><input type="range" id="rpSlider" min="0" max="5" step="0.01" value="0" aria-label="Replay month"><button class="btn sm" id="rpPlay">❚❚</button><button class="btn sm" id="rpExit">Exit</button>`;
-  $('#rpSlider').oninput=e=>{S.replay.m=+e.target.value;S.replay.playing=false;renderReplayLabel()};$('#rpPlay').onclick=()=>{if(S.replay.m>=5)S.replay.m=0;S.replay.playing=!S.replay.playing;$('#rpPlay').textContent=S.replay.playing?'❚❚':'▶'};$('#rpExit').onclick=stopReplay;
-  remember('Replay','Replayed six months of signals from Market Memory.');if(S.tab==='memory')renderMemory()}
-function renderReplayLabel(){const l=$('#rpLbl');if(l&&S.replay)l.textContent=MONTHS[Math.round(S.replay.m)];const p=$('#rpPlay');if(p&&S.replay)p.textContent=S.replay.playing?'❚❚':'▶'}
-function stopReplay(){S.replay=null;const b=$('#replayBar');if(b)b.remove();if(S.tab==='memory')renderMemory()}
+function chainHTML(W,chain){return `<ul class="chain">${chain.map(c=>{if(c.type==='a'){const a=W.agents[c.i];return `<li><i></i><span><b style="font-weight:500">${h(a.n)}</b> ${arrow(c.x)} ${fmtO(c.x)}${c.edge?`<small>via ${h(c.edge.label.toLowerCase())}</small>`:''}</span></li>`}
+  const s=c.type==='s'?W.signals[c.c[1]]:null;return `<li class="src"><i></i><span><b style="font-weight:500">${h(srcName(W,c.c))}</b>${s?`<small>${s.state} · ${s.src} · confidence ${s.conf.toFixed(2)}</small>`:c.type==='e'?'<small>Your scenario</small>':c.type==='as'?'<small>Assumption, evidence incomplete</small>':'<small>Agent action</small>'}</span></li>`}).join('')}</ul>`}
 
-/* ---------- Live signal mode ---------- */
-const LIVE=[
- {t:c=>`New price observation received in ${c.district}`,tg:[[R_PRICES,.1]],src:'SavoScouts',pl:'markets',pat:'new',dir:'↑',scope:c=>c.area},
- {t:c=>`Stockout reported at outlets in ${c.district2}`,tg:[[R_AVAIL,-.12]],src:'SavoScouts',pl:'markets',pat:'new',dir:'↑',scope:c=>c.area},
- {t:()=>'New competitor activity detected online',tg:[[R_COMP,.12]],src:'Digital platforms',pl:'city',pat:'new',dir:'↑',scope:()=>'Digital platforms'},
- {t:()=>'Policy announcement published',tg:[[['regulator','government'],.12]],src:'Public records',pl:'capital',pat:'new',dir:'↑',scope:()=>'National'},
- {t:c=>`Transport disruption observed on the ${c.route} route`,tg:[[['transport','distributors','aggregators','g_channel','bagents'],.12]],src:'SavoScouts',pl:'routes',pat:'new',dir:'↑',scope:c=>c.route},
- {t:c=>`Retailers in ${c.district} report a demand uptick`,tg:[[R_DEMAND,.08]],src:'SavoScouts',pl:'markets',pat:'new',dir:'↑',scope:c=>c.area}
-];
-let liveTimer=null;
-function setLive(on){S.live=on;$('#live').checked=on;clearInterval(liveTimer);if(on){liveTimer=setInterval(liveTick,7000);setTimeout(liveTick,900)}}
-function liveTick(){
-  const W=S.W;if(!W||S.busy)return;const c=sigCtx(W);
-  for(let tries=0;tries<LIVE.length;tries++){const tp=LIVE[(S.liveN++)%LIVE.length];const s=makeSignal(W,{...tp,id:'live'+S.liveN},c);if(!s)continue;
-    s.live=true;s.freshness=0;s.frequency=Math.max(1,Math.min(4,s.frequency));s.life='emerging';W.signals.push(s);finalizeWorld(W);
-    s.places.forEach(pid=>S.flash.push({pid,t0:performance.now()}));S.liveBoost=.7;
-    const ag=s.tg.map(x=>W.agents[x[0]].n).join(', ');remember('Live signal',`${h(s.title)} (${s.src}) → ${h(ag)}`);toast(`Live: ${s.title}`);
-    const keepTau=S.tau;simulateNow({quiet:true,keepPath:true});S.tau=keepTau;return}
+/* ---------- Investigate ---------- */
+const INV=['Search existing sources','Ask SavoScouts for field evidence','Verify the evidence','Update agents and re-run'];
+async function investigate(id){
+  const W=S.W,a=W.assumptions.find(x=>x.id===id);if(!a||S.inv[id])return;const before=S.mc;
+  const st=S.inv[id]={step:0,recv:0};remember('Investigation',h(a.unknown));
+  for(let i=0;i<INV.length;i++){st.step=i;renderSide();
+    if(i===1){for(let k=0;k<=a.n;k+=Math.max(1,Math.ceil(a.n/8))){st.recv=k;renderSide();await sleep(120)}st.recv=a.n}else await sleep(600)}
+  a.mean=a.finding.mean;a.sd=a.finding.sd;a.verified=true;a.state='Inference';
+  simulate(true,true);const after=S.mc;st.done=true;st.change=`Range was ${fmtO(before.p10)} to ${fmtO(before.p90)}, now ${fmtO(after.p10)} to ${fmtO(after.p90)}.`;
+  remember('Verified',`${h(a.finding.text)} ${h(st.change)}`);renderSide();toast('Evidence verified. Simulation updated.');
 }
+
+/* ---------- Folded sections ---------- */
+function renderEvidence(){
+  const W=S.W;const warn=[];if(W.prof.evidence<.4)warn.push(`Evidence for ${geoShort(W.geo)} is limited, so ranges are wider.`);W.signals.filter(s=>s.life==='contested').forEach(s=>warn.push(`“${s.title}” is contradicted by other evidence.`));
+  $('#evi').innerHTML=`${warn.length?`<p style="margin:0;color:var(--pressure);font-size:13px">${h(warn.join(' '))}</p>`:''}<div class="cols"><div><span class="label">Signals</span><div class="list">${W.signals.map((s,k)=>`<button class="li" data-signal="${k}" style="${s.on?'':'opacity:.5'}"><span class="r1"><b>${h(s.title)}</b><span class="st ${s.state}">${s.state}</span></span><small>${h(s.src)} · confidence ${s.conf.toFixed(2)} · ${s.life}</small></button>`).join('')}</div></div>
+  <div><span class="label">Assumptions</span><div class="list">${W.assumptions.map(a=>`<div class="li"><span class="r1"><b>${h(a.label)}</b><span class="st ${a.verified?'Inference':'Assumption'}">${a.verified?'Verified':'Assumption'}</span></span><small>${h(a.verified?a.finding.text:a.unknown)}</small></div>`).join('')}</div>
+  <span class="label" style="display:block;margin-top:14px">Agents in this market</span><div class="list">${W.agents.map((a,i)=>`<button class="li" data-agent="${i}"><span class="r1"><b>${h(a.n)}</b></span><small>${h(a.why||'')}</small></button>`).join('')}</div></div></div>`;
+}
+function renderCompare(){
+  const W=S.W,spec=S.spec;
+  if(!S.cmp||S.cmp.mode!==S.cmpMode){
+    if(S.cmpMode==='geo'){const cur=W.geo;let alts=[];if(cur.city)alts=FEAT[cur.cid].cityIds.filter(id=>id!==cur.city).slice(0,2).map(id=>mkGeo('city',{city:id}));else alts=Object.keys(FEAT).filter(c=>c!==cur.cid).slice(0,2).map(cid=>mkGeo('country',{cid}));S.cmp={mode:'geo',geos:[cur,...alts]}}
+    else S.cmp={mode:'int'}
+    const extra=W.events.filter(e=>e.src!=='question').map(e=>[e.key,e.arg]);
+    if(S.cmpMode==='geo')S.cmp.res=S.cmp.geos.map(g=>{const W2=buildWorld(spec,g);extra.forEach(e=>addEvent(W2,e,'composer'));return {name:geoShort(g),W:W2,mc:monteCarlo(W2,90)}});
+    else S.cmp.res=[{name:'Your scenario',W,mc:S.mc},...(SECTORS[spec.sector]||SECTORS.generic).strategies.map(([name,evs])=>{const W2=buildWorld({...spec,events:evs,mods:new Set(spec.mods)},W.geo);return {name,W:W2,mc:monteCarlo(W2,90)}})];
+  }
+  const opts=[];Object.entries(FEAT).forEach(([cid,f])=>{opts.push([JSON.stringify(mkGeo('country',{cid})),CTRY[cid].name]);f.cityIds.forEach(id=>opts.push([JSON.stringify(mkGeo('city',{city:id})),`${CITY[id].name}, ${CTRY[cid].name}`]))});
+  $('#cmp').innerHTML=`<div class="cmp-h"><div class="seg"><button data-cmpmode="int" aria-pressed="${S.cmpMode==='int'}">Strategies</button><button data-cmpmode="geo" aria-pressed="${S.cmpMode==='geo'}">Locations</button></div>
+   ${S.cmpMode==='geo'?S.cmp.geos.map((g,i)=>`<select data-cmpgeo="${i}" aria-label="Location ${i+1}">${opts.map(([v,l])=>`<option value='${v}' ${v===JSON.stringify(g)?'selected':''}>${h(l)}</option>`).join('')}${opts.some(o=>o[0]===JSON.stringify(g))?'':`<option value='${JSON.stringify(g)}' selected>${h(geoShort(g))}</option>`}</select>`).join(''):''}</div>
+   <div class="mults">${S.cmp.res.map(r=>{const b=r.mc.paths.slice().sort((x,y)=>y.prob-x.prob)[0];return `<div class="mult"><h4>${h(r.name)}</h4><span class="v num">${fmtO(r.mc.p50)}</span><span class="muted" style="font-size:12px">${h(r.W.agents[r.W.out].m)} · range ${fmtO(r.mc.p10)} to ${fmtO(r.mc.p90)}</span>${miniChart(r.mc)}<span style="font-size:12.5px">Most likely: ${h(b.title)} (${Math.round(b.prob*100)}%)</span></div>`}).join('')}</div>`;
+}
+function renderMemory(){$('#mem').innerHTML=`<ul class="mem">${S.memory.map(m=>`<li><span class="t">${m.t}</span><span class="k">${h(m.kind)}</span><span>${m.text}</span></li>`).join('')||'<li><span></span><span></span><span class="muted">Nothing yet.</span></li>'}</ul>`}
 
 /* ---------- Events ---------- */
-function bindEvents(){
-  document.addEventListener('click',e=>{
-    const t=e.target;let b;
-    if((b=t.closest('[data-agent]'))&&!t.closest('#map')){S.sel={type:'agent',i:+b.dataset.agent};renderRight();renderLeft();return}
-    if((b=t.closest('[data-signal]'))){S.sel={type:'signal',k:+b.dataset.signal};renderRight();renderLeft();return}
-    if((b=t.closest('[data-place]'))){const p=S.W.placeIdx[b.dataset.place];if(p){if(p.geo)navTo(p.geo.level==='district'?p.geo:p.geo);S.sel={type:'place',g:p.geo,pid:p.id};renderRight()}return}
-    if(t.closest('[data-back]')||t.closest('[data-close]')){S.sel=null;renderRight();renderLeft();return}
-    if((b=t.closest('[data-crumb]'))){const c=JSON.parse(b.dataset.crumb);navTo(mkGeo(c.level,c));return}
+function bind(){
+  document.addEventListener('click',e=>{const t=e.target;let b;
+    if((b=t.closest('[data-q]'))){ask(b.dataset.q);return}
+    if(t.id==='moreEx'){$('#ex').innerHTML=EXAMPLES.map(q=>`<button type="button" data-q="${h(q)}">${h(q)}</button>`).join('');return}
+    if((b=t.closest('[data-agent]'))){S.detail={type:'agent',i:+b.dataset.agent};S.playing=false;renderPlay();if(S.tau<1){S.tau=1;$('#scrub').value=1}renderSide();window.innerWidth<1000&&$('#side').scrollIntoView({behavior:RM?'auto':'smooth'});return}
+    if((b=t.closest('[data-signal]'))){S.detail={type:'signal',k:+b.dataset.signal};renderSide();$('#side').scrollIntoView({behavior:RM?'auto':'smooth',block:'nearest'});return}
+    if(t.closest('[data-close]')){S.detail=null;renderSide();return}
+    if((b=t.closest('[data-crumb]'))){const c=JSON.parse(b.dataset.crumb);const g=mkGeo(c.level,c);navTo(g);if(g.level!=='africa'&&g.level!=='region')offerSim(g);return}
     if((b=t.closest('[data-v]'))){S.view=b.dataset.v;$$('#viewSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#stageBody').className='stage-body'+(S.view==='both'?'':' v-'+S.view);setTimeout(sizeMap,30);return}
-    if((b=t.closest('[data-path]'))){S.path=b.dataset.path;S.tau=0;renderTimeline();renderRight();if(S.tab==='futures')renderFutures();return}
-    if((b=t.closest('[data-playpath]'))){S.path=b.dataset.playpath;S.tau=0;S.playing=true;renderPlayBtn();renderTimeline();document.querySelector('#stage').scrollIntoView({behavior:RM?'auto':'smooth'});return}
-    if((b=t.closest('[data-tab]'))){switchTab(b.dataset.tab);return}
-    if((b=t.closest('[data-tabgo]'))){switchTab(b.dataset.tabgo);return}
-    if(t.closest('[data-cmpint]')){S.cmpMode='int';switchTab('compare');return}
-    if((b=t.closest('[data-cmpmode]'))){S.cmpMode=b.dataset.cmpmode;S.cmp=null;renderCompare();return}
-    if((b=t.closest('[data-rmev]'))){S.W.events=S.W.events.filter(e=>e.id!==b.dataset.rmev);remember('Event removed','Scenario changed.');S.tau=0;simulateNow({quiet:true});return}
-    if((b=t.closest('[data-addev]'))){addComposerEvent(b.dataset.addev,b.dataset.arg);return}
+    if((b=t.closest('[data-path]'))){S.path=b.dataset.path;S.tau=0;S.playing=true;renderPlay();renderSide();return}
+    if((b=t.closest('[data-rmev]'))){S.W.events=S.W.events.filter(x=>x.id!==b.dataset.rmev);S.tau=0;simulate();S.playing=true;renderPlay();return}
     if((b=t.closest('[data-investigate]'))){investigate(b.dataset.investigate);return}
-    if((b=t.closest('[data-rank]'))){const i=+b.dataset.rank;S.rankSel=i;S.W=buildWorld(S.spec,S.rank[i].geo);S.tau=0;simulateNow({quiet:true});remember('Location',`Loaded simulation for ${h(S.rank[i].label)}.`);return}
-    if((b=t.closest('[data-simhere]'))){const g=JSON.parse(b.dataset.simhere);const extra=S.W.events.filter(e=>e.src!=='question').map(e=>[e.key,e.arg]);S.W=buildWorld(S.spec,g);extra.forEach(x=>addEvent(S.W,x,'composer'));S.sel=null;S.tau=0;S.rank=null;navTo(g);simulateNow({quiet:true});remember('Location',`Rebuilt the market world for ${h(geoLabel(g))}.`);toast(`Market rebuilt for ${geoShort(g)}`);return}
-    if((b=t.closest('[data-zoom]'))){navTo(JSON.parse(b.dataset.zoom));return}
-    if((b=t.closest('[data-decide]'))){S.decision=b.dataset.decide;const note=($('#decNote')||{}).value||'';const best=S.mc.paths.slice().sort((x,y)=>y.prob-x.prob)[0];remember('Decision',`${h(S.decision)}. Evidence at the time: most supported path “${h(best.title)}” (${Math.round(best.prob*100)}%), ${S.W.assumptions.filter(a=>!a.verified).length} open assumptions.${note?' Note: '+h(note):''}`);renderSummary();toast('Decision recorded in Market Memory');return}
-    if(t.closest('[data-replay]')){startReplay();return}
-    if(t.closest('[data-replayexit]')){stopReplay();return}
+    if((b=t.closest('[data-rank]'))){S.rankSel=+b.dataset.rank;S.W=buildWorld(S.spec,S.rank[S.rankSel].geo);S.tau=0;S.detail=null;simulate(true);S.playing=true;renderPlay();return}
+    if((b=t.closest('[data-decide]'))){S.decision=b.dataset.decide;remember('Decision',h(S.decision));renderSide();toast('Decision recorded');return}
+    if((b=t.closest('[data-cmpmode]'))){S.cmpMode=b.dataset.cmpmode;S.cmp=null;renderCompare();return}
   });
-  document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#net .nd')){e.preventDefault();S.sel={type:'agent',i:+e.target.dataset.agent};renderRight()}});
   document.addEventListener('change',e=>{const t=e.target;
-    if(t.dataset.sigtoggle!=null){const s=S.W.signals[+t.dataset.sigtoggle];s.on=t.checked;remember('Signal',`${s.on?'Activated':'Switched off'} “${h(s.title)}”.`);simulateNow({quiet:true,keepPath:true});S.sel={type:'signal',k:s.k};renderRight();return}
-    if(t.dataset.cmpgeo!=null){S.cmp.geos[+t.dataset.cmpgeo]=JSON.parse(t.value);S.cmp.res=null;renderCompare();return}
-    if(t.dataset.as){const a=S.W.assumptions.find(x=>x.id===t.dataset.as);a.mean=+t.value;simulateNow({quiet:true,keepPath:true});return}
-    if(t.id==='live'){setLive(t.checked);return}
-    if(t.id==='adv'){S.adv=t.checked;if(S.adv)S.open.add('rels').add('vars');renderLeft();return}
+    if(t.id==='addEv'&&t.value){const [k,a]=t.value.split('|');const n0=S.W.agents.length;const ev=addEvent(S.W,[k,a===''?undefined:+a],'composer');if(!ev){toast('That event has no counterpart in this market');renderScenario();return}const added=S.W.agents.slice(n0).map(x=>x.n);toast(added.length?`${ev.label} added. New agents: ${added.join(', ')}`:`${ev.label} added`);S.tau=0;simulate();S.playing=true;renderPlay();return}
+    if(t.dataset.sigtoggle!=null){S.W.signals[+t.dataset.sigtoggle].on=t.checked;simulate(false,true);return}
+    if(t.dataset.cmpgeo!=null){S.cmp.geos[+t.dataset.cmpgeo]=JSON.parse(t.value);const keep=S.cmp.geos;S.cmp=null;S.cmpMode='geo';
+      const W=S.W,extra=W.events.filter(e=>e.src!=='question').map(e=>[e.key,e.arg]);S.cmp={mode:'geo',geos:keep,res:keep.map(g=>{const W2=buildWorld(S.spec,g);extra.forEach(x=>addEvent(W2,x,'composer'));return {name:geoShort(g),W:W2,mc:monteCarlo(W2,90)}})};renderCompare();return}
   });
-  $('#bPlay').onclick=()=>{if(!S.mc)return;$('#build').hidden=true;if(S.sel&&S.sel.type==='why')S.sel=null;if(S.tau>=STEPS)S.tau=0;S.playing=!S.playing;renderPlayBtn()};
-  $('#bRew').onclick=()=>{S.tau=0;S.playing=false;renderPlayBtn();$('#scrub').value=0};
-  $('#bBack').onclick=()=>{S.playing=false;renderPlayBtn();S.tau=Math.max(0,Math.ceil(S.tau-1.001));$('#scrub').value=S.tau};
-  $('#bFwd').onclick=()=>{S.playing=false;renderPlayBtn();S.tau=Math.min(STEPS,Math.floor(S.tau+1.001));$('#scrub').value=S.tau};
-  $('#scrub').addEventListener('input',e=>{S.playing=false;renderPlayBtn();S.tau=+e.target.value});
-  $('#whyBtn').onclick=()=>{if(!S.mc)return;if(S.tau<1){S.tau=Math.max(S.tau,STEPS/2);$('#scrub').value=S.tau}S.sel={type:'why'};renderRight()};
-  $('#motionBtn').onclick=()=>{const on=!document.body.classList.contains('motion');document.body.classList.toggle('motion',on);$('#motionBtn').textContent=on?'Exit Market Motion':'Market Motion';if(on){$('#build').hidden=true;S.view='both';$$('#viewSeg button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v==='both'));$('#stageBody').className='stage-body';S.tau=0;S.playing=true;renderPlayBtn();$('#stage').scrollIntoView({behavior:RM?'auto':'smooth'})}setTimeout(sizeMap,60)};
-  const stage=$('#stage');let dragKey=null;
-  document.addEventListener('dragstart',e=>{const b=e.target.closest&&e.target.closest('[data-addev]');if(!b)return;dragKey=[b.dataset.addev,b.dataset.arg];try{e.dataTransfer.setData('text/plain',b.dataset.addev);e.dataTransfer.effectAllowed='copy'}catch(_){}});
-  stage.addEventListener('dragover',e=>{if(!dragKey)return;e.preventDefault();$('#drop').hidden=false});
-  stage.addEventListener('dragleave',e=>{if(!stage.contains(e.relatedTarget))$('#drop').hidden=true});
-  stage.addEventListener('drop',e=>{e.preventDefault();$('#drop').hidden=true;if(dragKey){addComposerEvent(dragKey[0],dragKey[1]);dragKey=null}});
-  document.addEventListener('dragend',()=>{$('#drop').hidden=true;dragKey=null});
+  ['dCmp','dEvi','dMem'].forEach(id=>$('#'+id).addEventListener('toggle',()=>{if(!$('#'+id).open||!S.W)return;({dCmp:renderCompare,dEvi:renderEvidence,dMem:renderMemory})[id]()}));
+  $('#bPlay').onclick=()=>{if(!S.mc)return;if(S.tau>=STEPS)S.tau=0;S.playing=!S.playing;renderPlay()};
+  $('#scrub').addEventListener('input',e=>{S.playing=false;renderPlay();S.tau=+e.target.value});
+  $('#whyBtn').onclick=()=>{if(!S.mc)return;S.playing=false;renderPlay();if(S.tau<1){S.tau=STEPS;$('#scrub').value=STEPS}S.detail={type:'why'};renderSide()};
+  $('#simHere').onclick=()=>{const g=S.navTarget;if(!g)return;const extra=S.W.events.filter(e=>e.src!=='question').map(e=>[e.key,e.arg]);S.W=buildWorld(S.spec,g);extra.forEach(x=>addEvent(S.W,x,'composer'));S.rank=null;S.detail=null;S.tau=0;$('#simHere').hidden=true;simulate(true);remember('Location',`Rebuilt for ${h(geoLabel(g))}.`);toast(`Simulating in ${geoShort(g)}`);S.playing=true;renderPlay()};
+  document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('#net .nd')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
 }
-
-/* ---------- Boot ---------- */
-initLanding();initMap();bindEvents();requestAnimationFrame(frame);
+initIntro();initMap();bind();requestAnimationFrame(frame);
 
 </script>
